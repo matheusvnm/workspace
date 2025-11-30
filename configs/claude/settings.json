@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod:*)",
+      "Bash(git:*)",
+      "Bash(npm:*)",
+      "Bash(yarn:*)",
+      "Bash(pnpm:*)",
+      "Bash(docker:*)",
+      "Bash(python:*)",
+      "Bash(pip:*)",
+      "Bash(pytest:*)",
+      "Bash(node:*)",
+      "Bash(just:*)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "env": {},
+  "model": "sonnet"
+}

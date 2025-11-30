@@ -28,6 +28,8 @@ Temporary Items
 # Local configuration files
 .env
 .env.local
+.env.claude
+.env.gemini
 config.local
 
 # IDE
@@ -39,3 +41,6 @@ config.local
 
 # Test files
 test_output/
+
+# Configuration backups
+configs/**/*.backup.*

@@ -1,0 +1,22 @@
+#!/bin/bash
+
+###############################################################################
+# Git Hook: post-merge
+#
+# Automatically notifies about config changes after git pull
+###############################################################################
+
+# Check if configs directory was updated
+if git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD | grep -q "^configs/"; then
+    echo ""
+    echo "✓ Configurations updated - changes automatically synced via symlinks"
+    echo ""
+
+    if [ ! -L ~/.claude/commands ]; then
+        echo "⚠️  Warning: Claude symlinks missing. Run: ./scripts/02.setup-configs.sh"
+    fi
+
+    if [ ! -L ~/.gemini/commands ]; then
+        echo "⚠️  Warning: Gemini symlinks missing. Run: ./scripts/02.setup-configs.sh"
+    fi
+fi
