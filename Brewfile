@@ -10,8 +10,8 @@ brew "wget"                  # Network downloader
 brew "jq"                    # JSON processor
 brew "tree"                  # Directory structure viewer
 brew "gemini-cli"            # Gemini CLI
-
-
+brew "btop"                  # Beautiful Terminal
+ 
 cask "claude-code"           # Claude Code
 cask "visual-studio-code"    # VS Code
 cask "docker-desktop"        # Docker Desktop
