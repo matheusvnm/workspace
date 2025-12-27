@@ -1,0 +1,159 @@
+#!/bin/bash
+# Claude Code wrapper with profile management
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(dirname "$SCRIPT_DIR")"
+PROFILES_DIR="$REPO_ROOT/models/claude/profiles"
+CLAUDE_DIR="$HOME/.claude"
+STATE_FILE="$CLAUDE_DIR/.current-profile"
+
+# Find real claude binary (skip our wrapper)
+find_real_claude() {
+    local paths=("/opt/homebrew/bin/claude" "/usr/local/bin/claude")
+    for p in "${paths[@]}"; do
+        if [[ -x "$p" && "$p" != "$SCRIPT_DIR/claude" ]]; then
+            echo "$p"; return
+        fi
+    done
+    PATH="${PATH//$SCRIPT_DIR:/}" command -v claude 2>/dev/null || echo ""
+}
+
+REAL_CLAUDE="$(find_real_claude)"
+
+get_current_profile() {
+    [[ -f "$STATE_FILE" ]] && cat "$STATE_FILE" || echo "none"
+}
+
+show_profile() {
+    echo "Current profile: $(get_current_profile)"
+}
+
+list_profiles() {
+    local current=$(get_current_profile)
+    echo "Available profiles:"
+    for dir in "$PROFILES_DIR"/*/; do
+        [[ -d "$dir" ]] || continue
+        local name=$(basename "$dir")
+        if [[ "$name" == "$current" ]]; then
+            echo "  * $name (active)"
+        else
+            echo "    $name"
+        fi
+    done
+}
+
+switch_profile() {
+    local profile="$1"
+    local skip_login="$2"
+    local source_dir="$PROFILES_DIR/$profile"
+
+    [[ -z "$profile" ]] && { echo "Usage: claude profile switch <name>"; exit 1; }
+    [[ ! -d "$source_dir" ]] && { echo "Profile '$profile' not found"; list_profiles; exit 1; }
+
+    mkdir -p "$CLAUDE_DIR"
+
+    for item in settings.json agents commands; do
+        [[ -L "$CLAUDE_DIR/$item" ]] && rm "$CLAUDE_DIR/$item"
+        [[ -e "$source_dir/$item" ]] && ln -sf "$source_dir/$item" "$CLAUDE_DIR/$item"
+    done
+
+    echo "$profile" > "$STATE_FILE"
+    echo "Switching to profile: $profile"
+
+    # Trigger OAuth login for the new profile
+    if [[ "$skip_login" != "--no-login" && -n "$REAL_CLAUDE" ]]; then
+        echo ""
+        echo "Opening OAuth login for '$profile' profile..."
+        "$REAL_CLAUDE" /login
+    fi
+}
+
+add_profile() {
+    local name="$1"
+    [[ -z "$name" ]] && { echo "Usage: claude profile add <name>"; exit 1; }
+
+    local profile_dir="$PROFILES_DIR/$name"
+    [[ -d "$profile_dir" ]] && { echo "Profile '$name' already exists"; exit 1; }
+
+    mkdir -p "$profile_dir"/{agents,commands}
+    cat > "$profile_dir/settings.json" << 'SETTINGS'
+{
+  "env": {},
+  "permissions": {
+    "allow": [],
+    "deny": []
+  }
+}
+SETTINGS
+
+    echo "Created profile: $name"
+    echo "Location: $profile_dir"
+}
+
+rm_profile() {
+    local name="$1"
+    [[ -z "$name" ]] && { echo "Usage: claude profile rm <name>"; exit 1; }
+
+    local profile_dir="$PROFILES_DIR/$name"
+    [[ ! -d "$profile_dir" ]] && { echo "Profile '$name' not found"; list_profiles; exit 1; }
+
+    local current=$(get_current_profile)
+    if [[ "$name" == "$current" ]]; then
+        echo "Cannot remove active profile '$name'"
+        echo "Switch to another profile first: claude profile switch <other>"
+        exit 1
+    fi
+
+    read -p "Remove profile '$name'? This cannot be undone. [y/N] " confirm
+    if [[ "$confirm" =~ ^[Yy]$ ]]; then
+        rm -rf "$profile_dir"
+        echo "Removed profile: $name"
+    else
+        echo "Cancelled"
+    fi
+}
+
+show_help() {
+    echo "Claude Profile Management"
+    echo ""
+    echo "Usage: claude profile <command> [args]"
+    echo ""
+    echo "Commands:"
+    echo "  (none)              Show current active profile"
+    echo "  list                List all available profiles"
+    echo "  switch <name>       Switch to a profile (triggers OAuth login)"
+    echo "  add <name>          Create a new profile"
+    echo "  rm <name>           Remove a profile"
+    echo "  help                Show this help message"
+    echo ""
+    echo "Options:"
+    echo "  --no-login          Skip OAuth login when switching profiles"
+    echo ""
+    echo "Examples:"
+    echo "  claude profile                        # Show current profile"
+    echo "  claude profile list                   # List all profiles"
+    echo "  claude profile switch work            # Switch to 'work' + login"
+    echo "  claude profile switch work --no-login # Switch without login"
+    echo "  claude profile add client             # Create 'client' profile"
+    echo "  claude profile rm client              # Remove 'client' profile"
+}
+
+# Main dispatch
+case "$1" in
+    profile)
+        case "$2" in
+            "")         show_profile ;;
+            list)       list_profiles ;;
+            switch)     switch_profile "$3" "$4" ;;
+            add)        add_profile "$3" ;;
+            rm)         rm_profile "$3" ;;
+            help)       show_help ;;
+            *)          echo "Unknown: claude profile $2"; show_help; exit 1 ;;
+        esac
+        ;;
+    *)
+        [[ -z "$REAL_CLAUDE" ]] && { echo "Claude CLI not found"; exit 1; }
+        exec "$REAL_CLAUDE" "$@"
+        ;;
+esac

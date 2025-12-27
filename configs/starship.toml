@@ -1,0 +1,29 @@
+# Starship Prompt Configuration
+# Managed by github.com/smmarques/tools
+
+format = """
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_status\
+$custom\
+$line_break\
+$character"""
+
+[custom.claude_profile]
+command = "cat ~/.claude/.current-profile 2>/dev/null || echo 'none'"
+when = "test -f ~/.claude/.current-profile"
+format = "[claude:$output]($style) "
+style = "bold purple"
+description = "Active Claude Code profile"
+
+[directory]
+truncation_length = 3
+
+[git_branch]
+symbol = " "
+
+[character]
+success_symbol = "[>](bold green)"
+error_symbol = "[>](bold red)"

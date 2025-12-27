@@ -43,4 +43,5 @@ config.local
 test_output/
 
 # Configuration backups
+*.backup.*
 configs/**/*.backup.*

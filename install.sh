@@ -1,13 +1,14 @@
 #!/bin/bash
-
 ###############################################################################
 # Developer Tools Installation Script for macOS
 #
-# This script uses Homebrew Bundle (Brewfile) to install all tools.
-# It's idempotent - safe to run multiple times, only installs what's missing.
+# This script orchestrates all setup scripts for a fresh macOS installation.
+# It's idempotent - safe to run multiple times.
 ###############################################################################
 
 set -e  # Exit on error
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Colors for output
 RED='\033[0;31m'
@@ -44,136 +45,48 @@ log_section() {
 }
 
 ###############################################################################
-# System Validation
+# Pre-flight Checks
 ###############################################################################
 
 check_macos() {
-    log_section "Checking Operating System"
-
     if [[ "$OSTYPE" != "darwin"* ]]; then
         log_error "This script is designed for macOS only."
         log_error "Detected OS: $OSTYPE"
         exit 1
     fi
-
     log_success "Running on macOS ($(sw_vers -productVersion))"
 }
 
 ###############################################################################
-# Homebrew Setup
-###############################################################################
-
-install_homebrew() {
-    log_section "Checking Homebrew"
-
-    if command -v brew &> /dev/null; then
-        log_success "Homebrew is already installed ($(brew --version | head -n1))"
-        return 0
-    fi
-
-    log_warning "Homebrew not found. Installing Homebrew..."
-
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-    # Add Homebrew to PATH for Apple Silicon Macs
-    if [[ $(uname -m) == "arm64" ]]; then
-        echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
-        eval "$(/opt/homebrew/bin/brew shellenv)"
-    fi
-
-    if command -v brew &> /dev/null; then
-        log_success "Homebrew installed successfully"
-    else
-        log_error "Failed to install Homebrew"
-        exit 1
-    fi
-}
-
-update_homebrew() {
-    log_info "Updating Homebrew..."
-    brew update
-    log_success "Homebrew updated"
-}
-
-###############################################################################
-# Install Tools via Brewfile
-###############################################################################
-
-install_from_brewfile() {
-    log_section "Installing Tools from Brewfile"
-
-    if [ ! -f "Brewfile" ]; then
-        log_error "Brewfile not found in current directory"
-        log_error "Please run this script from the repository root"
-        exit 1
-    fi
-
-    log_info "Installing all tools from Brewfile..."
-    log_info "This may take a while on first run..."
-    echo ""
-
-    if brew bundle --verbose; then
-        log_success "All tools from Brewfile installed successfully"
-    else
-        log_warning "Some tools may have failed to install"
-        log_info "Run 'brew bundle cleanup --force' to remove unlisted tools"
-    fi
-}
-
-###############################################################################
-# Post-Installation
-###############################################################################
-
-show_post_install_notes() {
-    log_section "Post-Installation Notes"
-
-    echo ""
-    log_info "🐳 Docker:"
-    echo "  Start Docker Desktop from Applications to complete setup"
-    echo "  Open /Applications/Docker.app"
-    echo ""
-
-    log_info "🔑 GitHub CLI:"
-    echo "  Authenticate with: gh auth login"
-    echo ""
-
-    log_info "💻 VS Code:"
-    echo "  Launch from Applications or run 'code' command"
-    echo "  Install extensions: code --install-extension <extension-id>"
-    echo ""
-
-    log_info "🤖 Claude Code:"
-    echo "  Configure with your API key if needed"
-    echo ""
-
-    log_info "📦 Managing Tools:"
-    echo "  Update all: brew update && brew upgrade && brew upgrade --cask"
-    echo "  List installed: brew bundle list"
-    echo "  Cleanup: brew bundle cleanup"
-    echo ""
-}
-
-###############################################################################
-# Main Installation Flow
+# Main
 ###############################################################################
 
 main() {
     log_section "Developer Tools Installation Script"
-    log_info "Using Homebrew Bundle for dependency management"
+    log_info "Setting up your macOS development environment"
     echo ""
 
     check_macos
-    install_homebrew
-    update_homebrew
-    install_from_brewfile
+
+    # Run each installer in order
+    log_section "Step 1: Homebrew & Dependencies"
+    "$SCRIPT_DIR/scripts/install-brew.sh"
+
+    log_section "Step 2: Shell Integration"
+    "$SCRIPT_DIR/scripts/install-shell.sh"
+
+    log_section "Step 3: Starship Prompt"
+    "$SCRIPT_DIR/scripts/install-starship.sh"
+
+    log_section "Step 4: Claude Profiles"
+    "$SCRIPT_DIR/scripts/install-claude-profile.sh"
 
     log_section "Setup Complete!"
     log_success "Your developer environment is ready!"
-
-    show_post_install_notes
+    echo ""
+    log_info "Restart your terminal or run: source ~/.zshrc"
+    log_info "Then try: claude profile list"
 }
 
-# Run main function
 main
-
 exit 0

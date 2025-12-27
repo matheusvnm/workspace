@@ -1,22 +1,14 @@
 #!/bin/bash
+# Post-merge hook: notify if Claude profiles were updated
 
-###############################################################################
-# Git Hook: post-merge
-#
-# Automatically notifies about config changes after git pull
-###############################################################################
-
-# Check if configs directory was updated
-if git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD | grep -q "^configs/"; then
+if git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD | grep -q "^models/claude/profiles/"; then
     echo ""
-    echo "✓ Configurations updated - changes automatically synced via symlinks"
+    echo "Claude profiles updated! Changes synced via symlinks."
     echo ""
 
-    if [ ! -L ~/.claude/commands ]; then
-        echo "⚠️  Warning: Claude symlinks missing. Run: ./scripts/02.setup-configs.sh"
-    fi
-
-    if [ ! -L ~/.gemini/commands ]; then
-        echo "⚠️  Warning: Gemini symlinks missing. Run: ./scripts/02.setup-configs.sh"
+    # Check if profile symlinks exist
+    if [ ! -L ~/.claude/settings.json ] && [ ! -L ~/.claude/agents ]; then
+        echo "Warning: Claude profile symlinks missing."
+        echo "Run: claude profile switch <name>"
     fi
 fi
