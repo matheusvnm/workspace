@@ -1,6 +1,10 @@
 # Brewfile - Homebrew Bundle for Developer Tools
 # Install all tools with: brew bundle
 
+# Taps (Repositories) necessary to further downloads
+tap "atlassian/homebrew-acli"
+
+
 # CLI Tools
 brew "gh"                    # GitHub CLI
 brew "just"                  # Command runner for justfiles
@@ -10,6 +14,8 @@ brew "wget"                  # Network downloader
 brew "jq"                    # JSON processor
 brew "tree"                  # Directory structure viewer
 brew "btop"                  # Beautiful Terminal
+brew "opencode"              # Claude Code
+brew "acli"                  # Atlassian CLI (Jira, Confluence, etc).
 
 
 cask "claude-code"           # Claude Code
@@ -20,4 +26,4 @@ cask "dbeaver-community"     # DBeaver Community
 cask "mongodb-compass"       # MongoDB Compass
 cask "slack"                 # Slack
 cask "postman"               # Postman
-cask "freelens" 	         # Freelens K8 Cluster Manager
+cask "freelens" 	     # Freelens K8 Cluster Manager
