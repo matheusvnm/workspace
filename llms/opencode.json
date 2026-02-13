@@ -1,0 +1,19 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "bash": {
+      "*": "ask",
+      "npm *": "allow",
+      "docker *": "allow",
+      "python *": "allow",
+      "pytest *": "allow",
+      "node *": "allow",
+      "just *": "allow",
+      "xargs *": "allow",
+      "wc *": "allow",
+      "acli *": "ask",
+      "pip *": "ask",
+      "gh *": "ask",
+    }
+  }
+}

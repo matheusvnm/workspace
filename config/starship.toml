@@ -1,0 +1,88 @@
+# Starship theme converted from configs/oh-my-zsh-theme
+#
+# Original layout:  HH:MM:SS [user][host][~/path] branch ?  :
+# Right prompt:     exit_code ↵
+#
+# Note: The zsh theme turns the timestamp red on non-zero exit. Starship
+# does not support per-module exit-code styling, so the time stays green
+# and errors are signaled by the right-side status module instead.
+
+format = """
+$time\
+$username\
+$hostname\
+$directory\
+ $git_branch\
+$git_status\
+$character"""
+
+right_format = "$status"
+
+# --- Time: HH:MM:SS in green ------------------------------------------------
+
+[time]
+disabled = false
+format = "[$time]($style) "
+time_format = "%T"
+style = "green"
+
+# --- User: [username] with blue brackets, white name ------------------------
+
+[username]
+show_always = true
+format = "[\\[](blue)[$user](white)[\\]](blue)"
+
+# --- Host: [hostname] with blue brackets, red name --------------------------
+# Use `aliases` to replicate the zsh theme's host_repr shortening table.
+# Example:
+#   [hostname.aliases]
+#   "my-long-hostname.local" = "short"
+
+[hostname]
+ssh_only = true
+format = "[\\[](blue)[$hostname](red)[\\]](blue)"
+trim_at = "."
+
+# --- Directory: [~/path] with blue brackets, cyan path ----------------------
+
+[directory]
+format = "[\\[](blue)[$path](cyan)[\\]](blue)"
+truncation_length = 0
+truncate_to_repo = false
+
+# --- Git branch: yellow branch name -----------------------------------------
+
+[git_branch]
+format = "[ $branch]($style)"
+style = "yellow"
+
+# --- Git status: indicators in yellow ----------------------------------------
+# The zsh theme showed a single `?` for any dirty state. Starship is more
+# granular: `?` = untracked, `!` = modified, `+` = staged, etc.
+
+[git_status]
+format = "[ $all_status$ahead_behind]($style)"
+style = "yellow"
+conflicted = "="
+ahead = "⇡"
+behind = "⇣"
+diverged = "⇕"
+untracked = ""
+stashed = "\\$"
+modified = "!"
+staged = "+"
+renamed = "»"
+deleted = ""
+
+# --- Character: `:` in blue (matches zsh theme prompt ending) ---------------
+
+[character]
+success_symbol = "[❯](blue)"
+error_symbol = "[❯](red)"
+
+# --- Status (right prompt): exit code + ↵ in red on failure -----------------
+
+[status]
+disabled = false
+format = "[$status ↵]($style)"
+style = "red"
