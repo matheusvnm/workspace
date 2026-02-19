@@ -1,5 +1,5 @@
 ---
-name: analyzer
+name: Analyzer (Custom Agent)
 description: Break down complex requirements into structured, actionable work items for any project
 skills: []
 ---

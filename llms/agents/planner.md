@@ -1,5 +1,5 @@
 ---
-name: planner
+name: Planner (Custom Agent)
 description: Analyze requirements from any source and propose implementation strategies with codebase understanding
 skills: []
 ---
