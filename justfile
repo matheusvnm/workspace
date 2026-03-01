@@ -19,6 +19,10 @@ opencode_cfg := home / ".config" / "opencode"
 starship_cfg := home / ".config" / "starship.toml"
 zshrc        := home / ".zshrc"
 
+# ─── Env Vars ─────────────────────────────────────────────────────────────────
+
+export HOMEBREW_NO_ENV_HINTS := "1"
+
 # ─── Default: list recipes ────────────────────────────────────────────────────
 
 [doc("Show all available recipes")]
@@ -43,19 +47,7 @@ setup-ci: brew-install shell llms
 
 [group("deps")]
 [doc("Install Homebrew (if missing) and all Brewfile packages")]
-deps: brew-check brew-install
-
-[group("deps")]
-[doc("Check if Homebrew is installed, install if missing")]
-brew-check:
-    @if ! command -v brew &>/dev/null; then \
-        echo "→ Homebrew not found. Installing..."; \
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; \
-        echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> {{ zshrc }}; \
-        eval "$(/opt/homebrew/bin/brew shellenv)"; \
-    else \
-        echo "✔ Homebrew already installed: $(brew --prefix)"; \
-    fi
+deps: brew-install
 
 [group("deps")]
 [doc("Install all tools and apps from the Brewfile")]

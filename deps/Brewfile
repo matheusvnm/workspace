@@ -4,20 +4,23 @@
 # Taps (Repositories) necessary to further downloads
 tap "atlassian/homebrew-acli"
 
-# CLI Tools
+# Brews
 brew "gh"                    # GitHub CLI
 brew "just"                  # Command runner for justfiles
 brew "uv"                    # Python package manager
 brew "git"                   # Version control
 brew "wget"                  # Network downloader
+brew "telnet"                # Network telemetry tool
 brew "jq"                    # JSON processor
 brew "tree"                  # Directory structure viewer
-brew "btop"                  # Beautiful Terminal
+brew "btop"                  # Beautiful terminal
 brew "opencode"              # Open Code
 brew "acli"                  # Atlassian CLI (Jira, Confluence, etc).
 brew "starship"              # Starship Beautiful CLI 
 brew "awscli"                # AWS CLI
+brew "kubernetes-cli"        # Kubernetes CLI
 
+# Casks
 cask "claude-code"           # Claude CLI
 cask "codex"                 # Codex CLI
 cask "visual-studio-code"    # VSCode
@@ -29,5 +32,9 @@ cask "slack"                 # Slack
 cask "postman"               # Postman
 cask "freelens"              # Freelens K8 Cluster Manager
 cask "gcloud-cli"            # Google Cloud CLI
-
-
+cask "logi-options+"         # Logitech Options+
+cask "readdle-spark"         # Spark Mail
+cask "1password-cli"         # 1Password CLI
+cask "1password"             # 1Password GUI
+cask "google-chrome"         # Google Chrome 
+cask "iterm2"                # iTerm2 Terminal
