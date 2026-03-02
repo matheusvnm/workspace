@@ -42,7 +42,7 @@
       "gh * view *": "allow",
       "gh * diff *": "allow",
       "gh api *": "allow",
-      "gh api *-X*": "ask",
+      "gh api *-X*": "ask"
     }
   }
 }

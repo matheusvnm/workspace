@@ -72,7 +72,7 @@ brew-upgrade:
 
 [group("shell")]
 [doc("Configure shell: starship prompt, aliases, and functions")]
-shell: shell-starship shell-zshrc
+shell: shell-starship shell-oh-my-zsh shell-zshrc
     @echo "✔ Shell configured."
 
 [group("shell")]
@@ -93,6 +93,7 @@ shell-zshrc:
     block=$(cat <<'BLOCK'
     # >>> workspace-bootstrap >>>
     # Managed by: github.com/smmarques/workspace — do not edit this block.
+    eval "$(starship init zsh)"
     [ -f "WORKSPACE_DIR/config/.aliases" ]   && source "WORKSPACE_DIR/config/.aliases"
     [ -f "WORKSPACE_DIR/config/.functions" ] && source "WORKSPACE_DIR/config/.functions"
     # <<< workspace-bootstrap <<<
@@ -102,10 +103,35 @@ shell-zshrc:
 
     if grep -qF "$marker" {{ zshrc }} 2>/dev/null; then
         echo "✔ .zshrc already contains workspace block — skipping."
+        exit 0
+    fi 
+
+    echo "" >> {{ zshrc }}
+    echo "$block" >> {{ zshrc }}
+    echo "✔ Added workspace source block to {{ zshrc }}"
+
+
+[group("shell")]
+[doc("Install oh-my-zsh if missing (non-destructive)")]
+shell-oh-my-zsh:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    dest="$HOME/.oh-my-zsh"
+
+    if [ -d "$dest" ]; then
+        echo "✔ oh-my-zsh already installed at $dest"
+        exit 0
+    fi
+
+    echo "→ Installing oh-my-zsh via official installer..."
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+    # Verify installation
+    if [ -d "$dest" ]; then
+        echo "✔ oh-my-zsh installed: $dest"
     else
-        echo "" >> {{ zshrc }}
-        echo "$block" >> {{ zshrc }}
-        echo "✔ Added workspace source block to {{ zshrc }}"
+        echo "✘ oh-my-zsh installation failed"
+        exit 1
     fi
 
 # ══════════════════════════════════════════════════════════════════════════════
