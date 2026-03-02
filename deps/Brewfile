@@ -1,9 +1,6 @@
 # Brewfile - Homebrew Bundle for Developer Tools
 # Install all tools with: brew bundle
 
-# Taps (Repositories) necessary to further downloads
-tap "atlassian/homebrew-acli"
-
 # Brews
 brew "gh"                    # GitHub CLI
 brew "just"                  # Command runner for justfiles
@@ -15,10 +12,11 @@ brew "jq"                    # JSON processor
 brew "tree"                  # Directory structure viewer
 brew "btop"                  # Beautiful terminal
 brew "opencode"              # Open Code
-brew "acli"                  # Atlassian CLI (Jira, Confluence, etc).
+brew "atlassian/acli/acli"   # Atlassian CLI (Jira, Confluence, etc).
 brew "starship"              # Starship Beautiful CLI 
 brew "awscli"                # AWS CLI
 brew "kubernetes-cli"        # Kubernetes CLI
+brew "oven-sh/bun/bun"       # Bun JavaScript runtime
 
 # Casks
 cask "claude-code"           # Claude CLI
@@ -38,3 +36,6 @@ cask "1password-cli"         # 1Password CLI
 cask "1password"             # 1Password GUI
 cask "google-chrome"         # Google Chrome 
 cask "iterm2"                # iTerm2 Terminal
+cask "spotify"               # Spotify
+cask "todoist-app"           # Todoist
+cask "zoom"                  # Zoom

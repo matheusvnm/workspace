@@ -52,7 +52,7 @@ deps: brew-install
 [group("deps")]
 [doc("Install all tools and apps from the Brewfile")]
 brew-install:
-    brew bundle --file={{ deps_dir }}/Brewfile
+    brew bundle --file={{ deps_dir }}/Brewfile --verbose
     @echo "✔ Brewfile packages installed."
 
 [group("deps")]
