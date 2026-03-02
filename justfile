@@ -129,10 +129,12 @@ shell-oh-my-zsh:
     # Verify installation
     if [ -d "$dest" ]; then
         echo "✔ oh-my-zsh installed: $dest"
-    else
-        echo "✘ oh-my-zsh installation failed"
-        exit 1
+        exit 0
     fi
+
+    echo "✘ oh-my-zsh installation failed"
+    exit 1
+    
 
 # ══════════════════════════════════════════════════════════════════════════════
 # LLM Tooling (OpenCode)
