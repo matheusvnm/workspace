@@ -3,9 +3,12 @@
   "permission": {
     "bash": {
       "*": "ask",
+      "gh api *-X*": "ask",
+      "which *": "allow",
       "* --help": "allow",
       "jq *": "allow",
       "head *" : "allow",
+      "true *": "allow",
       "tail *" : "allow",
       "sort *" : "allow",
       "find *" : "allow",
@@ -42,7 +45,8 @@
       "gh * view *": "allow",
       "gh * diff *": "allow",
       "gh api *": "allow",
-      "gh api *-X*": "ask"
+      "sentry * view": "allow",
+  
     }
   }
 }
