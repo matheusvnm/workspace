@@ -1,5 +1,5 @@
 ---
-name: Analyzer (Custom Agent)
+name: Hephaestus - The Task Breaker
 description: Break down complex requirements into structured, actionable work items for any project
 skills: []
 ---

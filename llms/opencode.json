@@ -3,7 +3,8 @@
   "permission": {
     "bash": {
       "*": "ask",
-      "gh api *-X*": "ask",
+      "gh api * -X *": "ask",
+      "sentry api * -X *": "ask",
       "which *": "allow",
       "* --help": "allow",
       "jq *": "allow",
@@ -44,9 +45,10 @@
       "gh * status *": "allow",
       "gh * view *": "allow",
       "gh * diff *": "allow",
+      "gh pr list *": "allow",
       "gh api *": "allow",
-      "sentry * view": "allow",
-  
+      "sentry api *": "allow",
+      "sentry * view *": "allow",
     }
   }
 }
