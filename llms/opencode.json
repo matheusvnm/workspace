@@ -24,6 +24,7 @@
       "where *": "allow",
       "whoami *": "allow",
       "groups *": "allow",
+      "mkdir *": "allow",
       "fd *": "allow",
       "wc *": "allow",
       "xargs *": "allow",
