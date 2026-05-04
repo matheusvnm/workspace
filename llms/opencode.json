@@ -24,11 +24,10 @@
       "where *": "allow",
       "whoami *": "allow",
       "groups *": "allow",
-      "mkdir *": "allow",
       "fd *": "allow",
       "wc *": "allow",
       "xargs *": "allow",
-      "* --help": "allow",
+      "* --help *": "allow",
       "node *": "allow",
       "bun *": "allow",
       "eslint *": "allow",
@@ -55,12 +54,18 @@
       "gh * view *": "allow",
       "gh * diff *": "allow",
       "gh * list *": "allow",
+      "gh pr create *": "allow",
+      "gh pr edit *": "allow",
       "gh api *": "allow",
       "sentry api *": "allow",
       "sentry * view *": "allow",
       "jq *": "allow",
       "docker *": "allow",
       "just *": "allow",
+      "basename *": "allow",
+      "realpath *": "allow",
+      "gh workflow run deploy-feature.yml *": "allow",
+      "gh workflow run cleanup-feature.yml *": "allow"
     }
   }
 }
