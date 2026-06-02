@@ -17,6 +17,7 @@
       "base64 *" : "allow",
       "command *" : "allow",
       "grep *" : "allow",
+      "pwd w" : "allow",
       "awk *" : "allow",
       "cat *" : "allow",
       "echo *": "allow",
