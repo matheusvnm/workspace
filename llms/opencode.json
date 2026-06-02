@@ -12,6 +12,7 @@
       "sort *" : "allow",
       "find *" : "allow",
       "tree *" : "allow",
+      "uniq *" : "allow",
       "rg *" : "allow",
       "base64 *" : "allow",
       "command *" : "allow",
@@ -50,6 +51,7 @@
       "git ls-tree *": "allow",
       "git rev-parse *": "allow",
       "git stash *": "allow",
+      "git mv *": "allow",
       "gh * status *": "allow",
       "gh * view *": "allow",
       "gh * diff *": "allow",
@@ -65,7 +67,10 @@
       "basename *": "allow",
       "realpath *": "allow",
       "gh workflow run deploy-feature.yml *": "allow",
-      "gh workflow run cleanup-feature.yml *": "allow"
+      "gh workflow run cleanup-feature.yml *": "allow",
+      "swift *": "allow",
+      "xcrun *": "allow",
+      "xcodebuild *": "allow",
     }
   }
 }
