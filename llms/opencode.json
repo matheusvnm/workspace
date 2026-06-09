@@ -67,6 +67,8 @@
       "just *": "allow",
       "basename *": "allow",
       "realpath *": "allow",
+      "git config user.name *": "allow",
+      "git config user.email *": "allow",
       "gh workflow run deploy-feature.yml *": "allow",
       "gh workflow run cleanup-feature.yml *": "allow",
       "swift *": "allow",
