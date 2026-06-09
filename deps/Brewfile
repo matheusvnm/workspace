@@ -17,6 +17,7 @@ brew "starship"              # Starship Beautiful CLI
 brew "awscli"                # AWS CLI
 brew "kubernetes-cli"        # Kubernetes CLI
 brew "oven-sh/bun/bun"       # Bun JavaScript runtime
+brew "ast-grep"              # AST GREP a better code-focused GREP
 
 # Casks
 cask "claude-code"           # Claude CLI
