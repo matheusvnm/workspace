@@ -52,13 +52,13 @@ deps: brew-install
 [group("deps")]
 [doc("Install all tools and apps from the Brewfile")]
 brew-install:
-    brew bundle --file={{ deps_dir }}/Brewfile --verbose
+    brew bundle --file="{{ deps_dir }}/Brewfile" --verbose
     @echo "✔ Brewfile packages installed."
 
 [group("deps")]
 [doc("Show what would be installed/upgraded (dry run)")]
 brew-dry-run:
-    brew bundle check --file={{ deps_dir }}/Brewfile --verbose || true
+    brew bundle check --file="{{ deps_dir }}/Brewfile" --verbose || true
 
 [group("deps")]
 [doc("Update Homebrew and upgrade all installed packages")]
@@ -78,9 +78,9 @@ shell: shell-starship shell-oh-my-zsh shell-zshrc
 [group("shell")]
 [doc("Symlink starship.toml into ~/.config/")]
 shell-starship:
-    @mkdir -p "$(dirname {{ starship_cfg }})"
-    @if [ -L {{ starship_cfg }} ]; then rm {{ starship_cfg }}; fi
-    ln -sf {{ config_dir }}/starship.toml {{ starship_cfg }}
+    @mkdir -p "$(dirname "{{ starship_cfg }}")"
+    @if [ -L "{{ starship_cfg }}" ]; then rm "{{ starship_cfg }}"; fi
+    ln -sf "{{ config_dir }}/starship.toml" "{{ starship_cfg }}"
     @echo "✔ Starship config linked: {{ starship_cfg }} → {{ config_dir }}/starship.toml"
 
 [group("shell")]
@@ -101,13 +101,13 @@ shell-zshrc:
     )
     block="${block//WORKSPACE_DIR/{{ workspace }}}"
 
-    if grep -qF "$marker" {{ zshrc }} 2>/dev/null; then
+    if grep -qF "$marker" "{{ zshrc }}" 2>/dev/null; then
         echo "✔ .zshrc already contains workspace block — skipping."
         exit 0
     fi 
 
-    echo "" >> {{ zshrc }}
-    echo "$block" >> {{ zshrc }}
+    echo "" >> "{{ zshrc }}"
+    echo "$block" >> "{{ zshrc }}"
     echo "✔ Added workspace source block to {{ zshrc }}"
 
 
