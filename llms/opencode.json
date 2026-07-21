@@ -61,6 +61,8 @@
       "gh pr create *": "allow",
       "gh pr edit *": "allow",
       "gh api *": "allow",
+      "helm lint *": "allow",
+      "helm template *": "allow",
       "sentry api *": "allow",
       "sentry * view *": "allow",
       "jq *": "allow",

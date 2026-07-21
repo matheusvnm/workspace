@@ -39,3 +39,4 @@ cask "google-chrome"         # Google Chrome
 cask "iterm2"                # iTerm2 Terminal
 cask "spotify"               # Spotify
 cask "todoist-app"           # Todoist
+cask "openwork"              # OpenWork (Claude Cowork Alternative)
