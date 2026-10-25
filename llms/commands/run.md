@@ -1,3 +1,8 @@
+---
+name: run
+description: Search for a Claude command on directories under the current project and execute it.
+---
+
 # Run Claude Command: $COMMAND
 
 Search for a Claude command named `$COMMAND` in `.claude/commands/` directories under the current project and execute it.
