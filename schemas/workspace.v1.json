@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://workspace.local/schemas/workspace.v1.json",
+  "title": "Workspace manifest (workspace/v1)",
+  "type": "object",
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": { "const": "workspace/v1" },
+    "kind": { "enum": ["ToolSet", "Installer", "SkillSource", "PluginSet", "PermissionPolicy"] },
+    "metadata": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+        "description": { "type": "string", "minLength": 1 }
+      }
+    },
+    "spec": { "type": "object" }
+  },
+  "allOf": [
+    { "if": { "required": ["kind"], "properties": { "kind": { "const": "ToolSet" } } },
+      "then": { "properties": { "spec": { "$ref": "#/$defs/toolSet" } } } },
+    { "if": { "required": ["kind"], "properties": { "kind": { "const": "Installer" } } },
+      "then": { "properties": { "spec": { "$ref": "#/$defs/installer" } } } },
+    { "if": { "required": ["kind"], "properties": { "kind": { "const": "SkillSource" } } },
+      "then": { "properties": { "spec": { "$ref": "#/$defs/skillSource" } } } },
+    { "if": { "required": ["kind"], "properties": { "kind": { "const": "PluginSet" } } },
+      "then": { "properties": { "spec": { "$ref": "#/$defs/pluginSet" } } } },
+    { "if": { "required": ["kind"], "properties": { "kind": { "const": "PermissionPolicy" } } },
+      "then": { "properties": { "spec": { "$ref": "#/$defs/permissionPolicy" } } } }
+  ],
+  "$defs": {
+    "stringList": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "harness": { "enum": ["opencode"] },
+    "toolSet": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "taps": { "$ref": "#/$defs/stringList" },
+        "brew": { "$ref": "#/$defs/stringList" },
+        "cask": { "$ref": "#/$defs/stringList" }
+      },
+      "anyOf": [{ "required": ["brew"] }, { "required": ["cask"] }]
+    },
+    "installer": {
+      "type": "object",
+      "required": ["bin", "script"],
+      "additionalProperties": false,
+      "properties": {
+        "bin": { "type": "string", "minLength": 1 },
+        "script": { "type": "string", "pattern": "^automation/installers/[a-z0-9-]+\\.sh$" },
+        "post": { "$ref": "#/$defs/stringList" },
+        "hint": { "type": "string", "minLength": 1 },
+        "owns": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "skills": { "$ref": "#/$defs/stringList" },
+            "commands": { "$ref": "#/$defs/stringList" },
+            "agents": { "$ref": "#/$defs/stringList" }
+          }
+        }
+      }
+    },
+    "skillSource": {
+      "type": "object",
+      "required": ["source", "skills"],
+      "additionalProperties": false,
+      "properties": {
+        "source": { "type": "string", "pattern": "^(\\./[A-Za-z0-9._/-]+|[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)$" },
+        "skills": { "allOf": [{ "$ref": "#/$defs/stringList" }, { "minItems": 1 }] }
+      }
+    },
+    "pluginSet": {
+      "type": "object",
+      "required": ["harness", "plugins"],
+      "additionalProperties": false,
+      "properties": {
+        "harness": { "$ref": "#/$defs/harness" },
+        "plugins": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["package"],
+            "additionalProperties": false,
+            "properties": {
+              "package": { "type": "string", "minLength": 1 },
+              "options": { "type": "object" }
+            }
+          }
+        }
+      }
+    },
+    "permissionPolicy": {
+      "type": "object",
+      "required": ["harness", "rules"],
+      "additionalProperties": false,
+      "properties": {
+        "harness": { "$ref": "#/$defs/harness" },
+        "rules": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "enum": ["shell", "read", "edit", "glob", "grep", "webfetch", "websearch",
+                     "external_directory", "skill", "subagent", "question"]
+          },
+          "additionalProperties": { "$ref": "#/$defs/permissionRule" }
+        }
+      }
+    },
+    "permissionRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "default": { "enum": ["allow", "ask", "deny"] },
+        "allow": { "$ref": "#/$defs/stringList" },
+        "ask": { "$ref": "#/$defs/stringList" },
+        "deny": { "$ref": "#/$defs/stringList" }
+      }
+    }
+  }
+}
