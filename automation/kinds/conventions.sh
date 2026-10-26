@@ -7,9 +7,11 @@ render_zsh_block() {
 $ZSH_BLOCK_START
 # Managed by $WORKSPACE_DIR (just apply). Do not edit this block.
 case ":\$PATH:" in *":\$HOME/.local/bin:"*) ;; *) export PATH="\$HOME/.local/bin:\$PATH" ;; esac
-command -v starship >/dev/null 2>&1 && eval "\$(starship init zsh)"
-[ -f "$WORKSPACE_DIR/config/.aliases" ] && source "$WORKSPACE_DIR/config/.aliases"
-[ -f "$WORKSPACE_DIR/config/.functions" ] && source "$WORKSPACE_DIR/config/.functions"
+if (( ! \$+functions[prompt_starship_precmd] )) && command -v starship >/dev/null 2>&1; then
+  eval "\$(starship init zsh)"
+fi
+if [ -f "$WORKSPACE_DIR/config/.aliases" ]; then source "$WORKSPACE_DIR/config/.aliases"; fi
+if [ -f "$WORKSPACE_DIR/config/.functions" ]; then source "$WORKSPACE_DIR/config/.functions"; fi
 $ZSH_BLOCK_END
 EOF
 }

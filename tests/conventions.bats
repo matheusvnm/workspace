@@ -69,3 +69,19 @@ setup() {
   [ "$(readlink "$HOME/.config/opencode/commands/run.md")" = "$WORKSPACE_DIR/llms/commands/run.md" ]
   [ "$(readlink "$HOME/.config/starship.toml")" = "$WORKSPACE_DIR/config/starship.toml" ]
 }
+
+source_zsh_block_twice() {
+  stub_command starship 'echo "starship $*" >>"$STUB_LOG"; echo "prompt_starship_precmd() { :; }"'
+  render_zsh_block >"$BATS_TEST_TMPDIR/block.zsh"
+  zsh -f -c "$1; source \"$BATS_TEST_TMPDIR/block.zsh\"; source \"$BATS_TEST_TMPDIR/block.zsh\""
+}
+
+@test "zsh block initializes starship once when sourced twice" {
+  source_zsh_block_twice ":"
+  [ "$(grep -c 'starship init zsh' "$STUB_LOG")" -eq 1 ]
+}
+
+@test "zsh block skips starship when it is already initialized" {
+  source_zsh_block_twice "prompt_starship_precmd() { :; }"
+  [ "$(grep -c 'starship init zsh' "$STUB_LOG" || true)" -eq 0 ]
+}
