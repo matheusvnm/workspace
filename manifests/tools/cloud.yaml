@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schemas/workspace.v1.json
+apiVersion: workspace/v1
+kind: ToolSet
+metadata:
+  name: cloud
+  description: Cloud and container tooling
+spec:
+  brew:
+    - awscli            # AWS CLI
+    - kubernetes-cli    # kubectl
+  cask:
+    - gcloud-cli        # Google Cloud CLI
+    - freelens          # Kubernetes cluster manager
+    - docker-desktop    # Docker Desktop

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../schemas/workspace.v1.json
+apiVersion: workspace/v1
+kind: Installer
+metadata:
+  name: twg
+  description: Atlassian Teamwork Graph CLI
+spec:
+  bin: twg
+  script: automation/installers/twg.sh
+  post:
+    - twg skills install
+  hint: Run `twg setup` to sign in to Atlassian.
+  owns:
+    skills: ["twg*"]
+---
+apiVersion: workspace/v1
+kind: Installer
+metadata:
+  name: sentry
+  description: Sentry CLI
+spec:
+  bin: sentry
+  script: automation/installers/sentry.sh
+  hint: Run `sentry auth login` to sign in to Sentry.
+  owns:
+    skills: ["sentry-cli"]

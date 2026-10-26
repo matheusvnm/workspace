@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=../schemas/workspace.v1.json
+apiVersion: workspace/v1
+kind: SkillSource
+metadata:
+  name: ast-grep
+  description: Structural code search with ast-grep
+spec:
+  source: ast-grep/agent-skill
+  skills: [ast-grep]
+---
+apiVersion: workspace/v1
+kind: SkillSource
+metadata:
+  name: mattpocock
+  description: Grilling and design reference skills
+spec:
+  source: mattpocock/skills
+  skills: [grill-me, grilling, codebase-design, domain-modeling]
+---
+apiVersion: workspace/v1
+kind: SkillSource
+metadata:
+  name: asd-ste100
+  description: ASD-STE100 Simplified Technical English
+spec:
+  source: danyuchn/asd-ste100-skill
+  skills: [asd-ste100]
+---
+apiVersion: workspace/v1
+kind: SkillSource
+metadata:
+  name: humanizer
+  description: Remove AI writing patterns
+spec:
+  source: blader/humanizer
+  skills: [humanizer]
+---
+apiVersion: workspace/v1
+kind: SkillSource
+metadata:
+  name: local
+  description: Skills kept in this repo
+spec:
+  source: ./llms/skills
+  skills: ["*"]

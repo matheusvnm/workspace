@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schemas/workspace.v1.json
+apiVersion: workspace/v1
+kind: ToolSet
+metadata:
+  name: core
+  description: Daily CLI baseline
+spec:
+  brew:
+    - git          # version control
+    - gh           # GitHub CLI
+    - just         # command runner
+    - jq           # JSON processor
+    - yq           # YAML processor
+    - node         # Node.js runtime (npx skills)
+    - wget         # network downloader
+    - telnet       # network diagnostics
+    - tree         # directory tree viewer
+    - btop         # resource monitor
+    - starship     # shell prompt
+    - uv           # Python package manager
+    - ast-grep     # structural code search
+    - ripgrep      # fast text search
+    - fd           # fast file finder
+    - bats-core    # Bash test runner
+    - shellcheck   # Bash linter

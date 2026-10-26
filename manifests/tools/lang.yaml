@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=../../schemas/workspace.v1.json
+apiVersion: workspace/v1
+kind: ToolSet
+metadata:
+  name: lang
+  description: Language runtimes
+spec:
+  taps:
+    - oven-sh/bun
+  brew:
+    - oven-sh/bun/bun   # Bun JavaScript runtime

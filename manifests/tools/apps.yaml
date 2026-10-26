@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schemas/workspace.v1.json
+apiVersion: workspace/v1
+kind: ToolSet
+metadata:
+  name: apps
+  description: Desktop applications
+spec:
+  cask:
+    - visual-studio-code   # code editor
+    - iterm2               # terminal
+    - google-chrome        # browser
+    - slack                # chat
+    - readdle-spark        # mail
+    - 1password            # password manager
+    - 1password-cli        # password manager CLI
+    - spotify              # music
+    - todoist-app          # tasks
+    - obsidian             # notes
+    - logi-options+        # Logitech device settings

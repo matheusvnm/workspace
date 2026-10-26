@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=../../schemas/workspace.v1.json
+apiVersion: workspace/v1
+kind: ToolSet
+metadata:
+  name: data
+  description: Database and API clients
+spec:
+  cask:
+    - redis-insight       # Redis GUI
+    - dbeaver-community   # SQL GUI
+    - mongodb-compass     # MongoDB GUI
+    - postman             # HTTP API client
