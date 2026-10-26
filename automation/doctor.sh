@@ -56,7 +56,7 @@ while IFS= read -r toolset; do
     continue
   fi
   name="$(toolset_name "$toolset")"
-  if with_brewfile "$toolset" brew bundle check --no-upgrade >/dev/null 2>&1; then
+  if HOMEBREW_NO_AUTO_UPDATE=1 with_brewfile "$toolset" brew bundle check --no-upgrade >/dev/null 2>&1; then
     ok "toolset/$name installed"
   else
     warn "toolset/$name incomplete (expected if you skipped items with --pick)"

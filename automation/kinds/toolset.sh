@@ -66,7 +66,7 @@ toolset_apply() {
   name="$(toolset_name "$toolset")"
   if [ "$DRY_RUN" = 1 ]; then
     migrate_opencode_if_needed "$toolset"
-    with_brewfile "$toolset" brew bundle check --no-upgrade --verbose || true
+    HOMEBREW_NO_AUTO_UPDATE=1 with_brewfile "$toolset" brew bundle check --no-upgrade --verbose || true
     return 0
   fi
   migrate_opencode_if_needed "$toolset"

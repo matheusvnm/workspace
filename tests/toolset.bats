@@ -65,6 +65,13 @@ cask "codex"'
   ! grep -q "brew bundle --no-upgrade" "$STUB_LOG"
 }
 
+@test "apply in dry run does not let brew auto-update" {
+  stub_command brew 'echo "brew $* auto_update_off=${HOMEBREW_NO_AUTO_UPDATE:-}" >>"$STUB_LOG"'
+  DRY_RUN=1 run toolset_apply "$TOOLSET_CORE"
+  [ "$status" -eq 0 ]
+  grep -q "brew bundle check .* auto_update_off=1" "$STUB_LOG"
+}
+
 @test "pick installs only the confirmed items that are missing" {
   stub_command brew '
 echo "brew $*" >>"$STUB_LOG"
