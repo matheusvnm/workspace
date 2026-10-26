@@ -96,7 +96,7 @@ Load a skill when its condition is true.
 ## 7. Git
 
 - Push with an explicit branch name, for example `git push origin feature/payment-retry`.
-- Do not push to `main`, `master` or `develop` without approval from the user.
+- Do not push to `main`, `master`, `develop` or `pre-release` without approval from the user.
 - Do not force push without approval from the user.
 
 ## 8. Tests
