@@ -87,18 +87,18 @@ done <<<"$declared_skills"
 
 check "no prune candidates" bash "$WORKSPACE_DIR/automation/prune.sh" --check
 
-plugin_list="$(opencode plugin list 2>/dev/null || true)"
+plugin_list="$(opencode_output plugin list || true)"
 check "OpenCode loads claude-auth" contains_text "$plugin_list" "claude-auth"
 check "OpenCode loads plannotator" contains_text "$plugin_list" "plannotator"
 
-skill_list="$(opencode api skill.list 2>/dev/null || true)"
+skill_list="$(opencode_output api skill.list || true)"
 while IFS= read -r skill; do
   if [ -n "$skill" ]; then
     check "OpenCode sees skill $skill" contains_text "$skill_list" "$skill"
   fi
 done <<<"$declared_skills"
 
-command_list="$(opencode api command.list 2>/dev/null || true)"
+command_list="$(opencode_output api command.list || true)"
 for command_name in run bruh plannotator-review plannotator-annotate plannotator-last; do
   check "OpenCode sees command /$command_name" contains_text "$command_list" "$command_name"
 done

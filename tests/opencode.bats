@@ -112,3 +112,10 @@ read ask *.env"
   [ "$(jq '.plugins | length' <<<"$output")" -eq 2 ]
   [ "$(jq -r '.permissions[] | select(.action == "external_directory" and .resource == "*") | .effect' <<<"$output")" = ask ]
 }
+
+@test "opencode_output keeps the full output when opencode exits before a pipe drains" {
+  stub_command opencode 'if [ -p /dev/stdout ]; then printf "first"; else printf "first last"; fi'
+  run opencode_output api skill.list
+  [ "$status" -eq 0 ]
+  [ "$output" = "first last" ]
+}

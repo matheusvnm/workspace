@@ -24,6 +24,16 @@ opencode_major_version() {
   opencode --version 2>/dev/null | sed -E -n 's/^[^0-9]*([0-9]+)\..*/\1/p' | head -n 1
 }
 
+opencode_output() {
+  local output_file exit_status
+  output_file="$(mktemp)"
+  opencode "$@" >"$output_file" 2>/dev/null
+  exit_status=$?
+  cat "$output_file"
+  rm -f "$output_file"
+  return "$exit_status"
+}
+
 restart_opencode_service() {
   local major
   command -v opencode >/dev/null 2>&1 || return 0
