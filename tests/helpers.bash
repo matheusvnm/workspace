@@ -15,6 +15,7 @@ setup_workspace() {
   ln -s "$REPO_ROOT/automation" "$WORKSPACE_DIR/automation"
   ln -s "$REPO_ROOT/schemas" "$WORKSPACE_DIR/schemas"
   export PATH="$STUB_BIN:$PATH"
+  stub_command opencode 'exit 0'
 }
 
 write_manifest() {
