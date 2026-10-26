@@ -15,33 +15,37 @@ EOF
 }
 
 apply_zsh_block() {
-  local zshrc="$HOME/.zshrc" candidate
-  touch "$zshrc"
+  local zshrc="$HOME/.zshrc" current="$HOME/.zshrc" candidate
+  if [ ! -e "$zshrc" ]; then
+    current=/dev/null
+  fi
   candidate="$(mktemp)"
-  if grep -qxF "$ZSH_BLOCK_START" "$zshrc"; then
+  if grep -qxF "$ZSH_BLOCK_START" "$current"; then
     ZSH_BLOCK="$(render_zsh_block)" awk -v start="$ZSH_BLOCK_START" -v end="$ZSH_BLOCK_END" '
       $0 == start { print ENVIRON["ZSH_BLOCK"]; skipping = 1; next }
       $0 == end { skipping = 0; next }
       !skipping { print }
-    ' "$zshrc" >"$candidate"
+    ' "$current" >"$candidate"
   else
     {
-      cat "$zshrc"
+      cat "$current"
       printf '\n'
       render_zsh_block
     } >"$candidate"
   fi
-  if cmp -s "$candidate" "$zshrc"; then
+  if cmp -s "$candidate" "$current"; then
     rm -f "$candidate"
     ok "zshrc block up to date"
     return 0
   fi
   if [ "$DRY_RUN" = 1 ]; then
-    diff -u "$zshrc" "$candidate" || true
+    diff -u "$current" "$candidate" || true
     rm -f "$candidate"
     return 0
   fi
-  copy_to_backup "$zshrc"
+  if [ -e "$zshrc" ]; then
+    copy_to_backup "$zshrc"
+  fi
   cat "$candidate" >"$zshrc"
   rm -f "$candidate"
   ok "zshrc block updated"

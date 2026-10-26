@@ -41,6 +41,18 @@ setup() {
   [ "$(cat "$HOME/.zshrc")" = before ]
 }
 
+@test "zsh block in dry run does not create a missing zshrc" {
+  DRY_RUN=1 run apply_zsh_block
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"# >>> workspace-bootstrap >>>"* ]]
+  [ ! -e "$HOME/.zshrc" ]
+}
+
+@test "zsh block creates a missing zshrc" {
+  apply_zsh_block
+  grep -qxF "# >>> workspace-bootstrap >>>" "$HOME/.zshrc"
+}
+
 @test "link_markdown_files links every markdown file" {
   touch "$WORKSPACE_DIR/llms/commands/run.md" "$WORKSPACE_DIR/llms/commands/bruh.md" "$WORKSPACE_DIR/llms/commands/notes.txt"
   link_markdown_files "$WORKSPACE_DIR/llms/commands" "$HOME/.config/opencode/commands"

@@ -71,7 +71,7 @@ apply() {
   [ "$status" -eq 0 ]
   [ ! -e "$HOME/.agents/skills/upskill" ]
   [ ! -e "$HOME/.config/opencode/opencode.json" ]
-  [ ! -e "$HOME/.zshrc" ] || [ ! -s "$HOME/.zshrc" ]
+  [ ! -e "$HOME/.zshrc" ]
   ! grep -q "brew bundle --no-upgrade" "$STUB_LOG"
 }
 
