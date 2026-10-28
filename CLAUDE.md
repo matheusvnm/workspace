@@ -6,8 +6,8 @@ This repository controls the setup of a macOS machine. Read `README.md` before y
 
 - `manifests/` declares tools, installers, skills, plugins and permissions.
 - `llms/` holds the global rules, local skills, commands and agents.
-- Do not edit files that the reconciler generates or links on the machine, for example `~/.config/opencode/opencode.json`.
-- `llms/AGENTS.md` holds the global rules for all projects. This file holds the rules for this repository only.
+- Do not edit the files that the reconciler links or writes on the machine. The reconciler owns the `$schema` and `permissions` keys of `~/.claude/settings.json`. Claude Code owns the other keys.
+- `llms/CLAUDE.md` holds the global rules for all projects. This file holds the rules for this repository only.
 
 ## Procedures
 

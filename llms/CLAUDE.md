@@ -55,7 +55,6 @@ Load a skill when its condition is true.
 
 | Command | Use |
 |---|---|
-| `/run <name>` | Find and run a `.claude/commands/<name>.md` file of the project. |
 | `/bruh` | Say the last message again in plain words. |
 | `/plannotator-review` | Review the current changes in the Plannotator user interface. |
 | `/plannotator-annotate` | Add notes to a file in the Plannotator user interface. |
@@ -63,8 +62,8 @@ Load a skill when its condition is true.
 
 ## 5. Plans and specifications
 
-- Write each plan to `~/.agents/plans/<project_name>/<YYYY-MM-DD-topic>.md`.
-- Write each specification to `~/.agents/spec/<project_name>/<YYYY-MM-DD-topic>.md`.
+- Write each plan to `~/.claude/plans/<project_name>/<YYYY-MM-DD-topic>.md`.
+- Write each specification to `~/.claude/specs/<project_name>/<YYYY-MM-DD-topic>.md`.
 - `<project_name>` is the name of the root folder of the git repository.
 - Do not write plans or specifications in the project repository.
 - Keep one active plan for each task.
