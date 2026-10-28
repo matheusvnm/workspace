@@ -23,6 +23,7 @@ spec:
   additionalDirectories:
     - ~/.claude/plans
     - ~/.claude/specs
+    - /tmp
   allow:
     - Bash(head *)
     - Bash(tail *)
@@ -164,9 +165,6 @@ spec:
     - Bash(brew deps *)
     - Bash(brew desc *)
     - Bash(brew bundle check *)
-    - Bash(opencode debug *)
-    - Bash(opencode plugin list *)
-    - Bash(opencode api *)
     - WebFetch
     - WebSearch
   ask:
@@ -226,6 +224,5 @@ spec:
     - Bash(gh pr close*)
     - Bash(gh repo delete*)
     - Bash(gh release *)
-    - Bash(opencode api * -X *)
     - Read(//**/.env)
     - Read(//**/.env.*)
