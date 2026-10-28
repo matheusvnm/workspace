@@ -50,7 +50,7 @@ done'
   create_skill "$HOME/.claude/skills/alpha"
   run skillsource_apply "$REMOTE_SOURCE"
   [ "$status" -eq 0 ]
-  grep -qx "npx -y skills add owner/repo -g -a claude-code -y --skill beta" "$STUB_LOG"
+  grep -qx "npx -y skills add owner/repo -g -a claude-code --copy -y --skill beta" "$STUB_LOG"
 }
 
 @test "remote apply fails when npx does not create the skill" {

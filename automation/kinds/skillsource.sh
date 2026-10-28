@@ -47,7 +47,7 @@ apply_remote_skills() {
   for name in $missing; do
     set -- "$@" --skill "$name"
   done
-  DISABLE_TELEMETRY=1 npx -y skills add "$source" -g -a claude-code -y "$@" </dev/null || die "skills add failed for $source"
+  DISABLE_TELEMETRY=1 npx -y skills add "$source" -g -a claude-code --copy -y "$@" </dev/null || die "skills add failed for $source"
   for name in $missing; do
     [ -f "$SKILLS_DIR/$name/SKILL.md" ] || die "skill $name was not installed from $source"
   done
