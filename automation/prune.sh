@@ -2,8 +2,8 @@
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 source "$WORKSPACE_DIR/automation/lib/manifest.sh"
-source "$WORKSPACE_DIR/automation/kinds/opencode.sh"
 source "$WORKSPACE_DIR/automation/kinds/skillsource.sh"
+source "$WORKSPACE_DIR/automation/kinds/claude.sh"
 
 mode=delete
 case "${1:-}" in
@@ -14,9 +14,12 @@ case "${1:-}" in
 esac
 
 candidate_count=0
-deleted_count=0
+removed_count=0
 lock_file="$HOME/.agents/.skill-lock.json"
-cache_dir="${OPENCODE_CACHE_DIR:-$HOME/.cache/opencode}"
+built_in_marketplaces="claude-plugins-official"
+obsolete_paths="$HOME/.config/opencode
+$HOME/.cache/opencode
+$HOME/.codex"
 
 matches_any() {
   local name="$1" patterns="$2" pattern
@@ -53,25 +56,31 @@ remove_path() {
   local path="$1" name
   name="$(basename "$path")"
   if [ "$(dirname "$path")" = "$SKILLS_DIR" ] && is_lock_tracked "$name"; then
-    DISABLE_TELEMETRY=1 npx -y skills remove -g -y "$name" </dev/null || warn "skills remove failed for $name"
+    DISABLE_TELEMETRY=1 npx -y skills remove -g -a claude-code -y "$name" </dev/null || warn "skills remove failed for $name"
   fi
   if [ -e "$path" ] || [ -L "$path" ]; then
     rm -rf "$path"
   fi
 }
 
-consider() {
-  local path="$1" reason="$2"
+offer() {
+  local description="$1"
+  shift
   candidate_count=$((candidate_count + 1))
-  printf '• %s (%s, %s)\n' "$path" "$reason" "$(describe_path "$path")"
-  if [ "$mode" != delete ]; then
+  printf '• %s\n' "$description"
+  if [ "$mode" != delete ] || ! confirm "Remove $description?"; then
     return 0
   fi
-  if confirm "Delete $path?"; then
-    remove_path "$path"
-    deleted_count=$((deleted_count + 1))
-    ok "deleted $path"
+  if "$@" </dev/null; then
+    removed_count=$((removed_count + 1))
+    ok "removed $description"
+  else
+    warn "could not remove $description"
   fi
+}
+
+consider_path() {
+  offer "$1 ($2, $(describe_path "$1"))" remove_path "$1"
 }
 
 scan_dir() {
@@ -88,14 +97,44 @@ scan_dir() {
       continue
     fi
     if [ -L "$entry" ] && [ ! -e "$entry" ]; then
-      consider "$entry" "broken symlink"
+      consider_path "$entry" "broken symlink"
       continue
     fi
     if matches_any "$name" "$declared"; then
       continue
     fi
-    consider "$entry" "undeclared"
+    consider_path "$entry" "undeclared"
   done
+}
+
+scan_plugins() {
+  local declared plugin_id
+  declared="$(declared_plugin_ids)"
+  while IFS= read -r plugin_id; do
+    if [ -n "$plugin_id" ] && ! grep -qxF "$plugin_id" <<<"$declared"; then
+      offer "Claude plugin $plugin_id (undeclared)" claude plugin uninstall "$plugin_id" --scope user
+    fi
+  done <<<"$(installed_plugin_ids)"
+}
+
+scan_marketplaces() {
+  local declared name
+  declared="$(declared_marketplaces | cut -d' ' -f1)
+$built_in_marketplaces"
+  while IFS= read -r name; do
+    if [ -n "$name" ] && ! grep -qxF "$name" <<<"$declared"; then
+      offer "Claude marketplace $name (undeclared)" claude plugin marketplace remove "$name"
+    fi
+  done <<<"$(known_marketplace_names)"
+}
+
+scan_obsolete_paths() {
+  local path
+  while IFS= read -r path; do
+    if [ -e "$path" ] || [ -L "$path" ]; then
+      consider_path "$path" "obsolete"
+    fi
+  done <<<"$obsolete_paths"
 }
 
 load_manifests
@@ -110,14 +149,13 @@ $owned_commands"
 declared_agents="$(markdown_names "$WORKSPACE_DIR/llms/agents")
 $owned_agents"
 
-scan_dir "$SKILLS_DIR" "$declared_skills"
-scan_dir "$HOME/.claude/skills" "$owned_skills" "synced"
-scan_dir "$HOME/.claude/agents" "$owned_agents"
-scan_dir "$HOME/.codex/skills" ""
-scan_dir "$OPENCODE_DIR/skills" ""
-scan_dir "$OPENCODE_DIR/agents" "$declared_agents"
-scan_dir "$OPENCODE_DIR/commands" "$declared_commands"
-scan_dir "$cache_dir/packages" ""
+scan_dir "$SKILLS_DIR" "$declared_skills" "synced"
+scan_dir "$CLAUDE_DIR/agents" "$declared_agents"
+scan_dir "$CLAUDE_DIR/commands" "$declared_commands"
+scan_dir "$HOME/.agents/skills" "$owned_skills"
+scan_plugins
+scan_marketplaces
+scan_obsolete_paths
 
 case "$mode" in
   check)
@@ -131,9 +169,6 @@ case "$mode" in
     log "$candidate_count candidates (dry run, nothing deleted)"
     ;;
   delete)
-    log "$deleted_count of $candidate_count candidates deleted"
-    if [ "$deleted_count" -gt 0 ]; then
-      restart_opencode_service
-    fi
+    log "$removed_count of $candidate_count candidates removed"
     ;;
 esac
