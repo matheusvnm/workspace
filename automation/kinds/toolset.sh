@@ -1,5 +1,4 @@
 # shellcheck shell=bash
-OPENCODE_V2_FORMULA="anomalyco/tap/opencode-v2"
 
 render_brewfile() {
   jq -r 'def trust_suffix: if contains("/") then ", trusted: true" else "" end;
@@ -29,47 +28,41 @@ is_package_installed() {
   fi
 }
 
-installed_opencode_v1() {
-  local formula version
-  formula="$(brew list --formula --full-name 2>/dev/null </dev/null | grep -E '(^|/)opencode$' | head -n 1 || true)"
-  [ -n "$formula" ] || return 1
-  version="$(brew list --versions "$formula" 2>/dev/null </dev/null | awk '{print $2}')"
-  case "$version" in
-    1.*) printf '%s\n' "$formula" ;;
-    *) return 1 ;;
-  esac
+uninstall_entries() {
+  jq -r '((.spec.uninstall.brew // [])[] | "brew \(.)"), ((.spec.uninstall.cask // [])[] | "cask \(.)")' <<<"$1"
 }
 
-migrate_opencode_if_needed() {
-  local toolset="$1" formula
-  if ! jq -e --arg formula "$OPENCODE_V2_FORMULA" '(.spec.brew // []) | index($formula)' <<<"$toolset" >/dev/null; then
-    return 0
-  fi
-  formula="$(installed_opencode_v1)" || return 0
-  if [ "$DRY_RUN" = 1 ]; then
-    log "would uninstall $formula (OpenCode 1) before installing $OPENCODE_V2_FORMULA"
-    return 0
-  fi
-  if ! confirm "Uninstall $formula (OpenCode 1)? $OPENCODE_V2_FORMULA requires it."; then
-    die "OpenCode 1 is still installed. Uninstall it, or remove $OPENCODE_V2_FORMULA from the manifest."
-  fi
-  brew uninstall "$formula" </dev/null
-  brew update </dev/null
-  if brew list --cask opencode-desktop >/dev/null 2>&1 </dev/null; then
-    brew upgrade --cask opencode-desktop </dev/null || warn "opencode-desktop upgrade failed"
-  fi
-  ok "OpenCode 1 removed"
+toolset_uninstall() {
+  local toolset="$1" type item
+  while IFS=' ' read -r type item; do
+    if [ -z "$item" ] || ! is_package_installed "$type" "$item"; then
+      continue
+    fi
+    if [ "$DRY_RUN" = 1 ]; then
+      log "would uninstall $type $item"
+      continue
+    fi
+    if ! confirm "Uninstall $type $item?"; then
+      warn "kept $type $item"
+      continue
+    fi
+    if [ "$type" = cask ]; then
+      brew uninstall --cask "$item" </dev/null
+    else
+      brew uninstall "$item" </dev/null
+    fi
+    ok "uninstalled $type $item"
+  done <<<"$(uninstall_entries "$toolset")"
 }
 
 toolset_apply() {
   local toolset="$1" name
   name="$(toolset_name "$toolset")"
+  toolset_uninstall "$toolset"
   if [ "$DRY_RUN" = 1 ]; then
-    migrate_opencode_if_needed "$toolset"
     HOMEBREW_NO_AUTO_UPDATE=1 with_brewfile "$toolset" brew bundle check --no-upgrade --verbose || true
     return 0
   fi
-  migrate_opencode_if_needed "$toolset"
   with_brewfile "$toolset" brew bundle --no-upgrade || die "toolset/$name failed"
   ok "toolset/$name applied"
 }
@@ -91,9 +84,6 @@ toolset_pick() {
     if [ "$type" = cask ]; then
       brew install --cask "$item" </dev/null
     else
-      if [ "$item" = "$OPENCODE_V2_FORMULA" ]; then
-        migrate_opencode_if_needed "$toolset"
-      fi
       brew install "$item" </dev/null
     fi
   done <<<"$(jq -r '((.spec.brew // [])[] | "brew \(.)"), ((.spec.cask // [])[] | "cask \(.)")' <<<"$toolset")"
@@ -112,4 +102,14 @@ toolset_status() {
       printf '  ✘ %s %s\n' "$type" "$item"
     fi
   done <<<"$(jq -r '((.spec.brew // [])[] | "brew \(.)"), ((.spec.cask // [])[] | "cask \(.)")' <<<"$toolset")"
+  while IFS=' ' read -r type item; do
+    if [ -z "$item" ]; then
+      continue
+    fi
+    if is_package_installed "$type" "$item"; then
+      printf '  ✘ absent %s %s\n' "$type" "$item"
+    else
+      printf '  ✔ absent %s %s\n' "$type" "$item"
+    fi
+  done <<<"$(uninstall_entries "$toolset")"
 }

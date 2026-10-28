@@ -5,56 +5,16 @@ load helpers
 setup() {
   setup_workspace
   load_automation toolset
-  TOOLSET_AI='{"kind":"ToolSet","metadata":{"name":"ai"},"spec":{"taps":["anomalyco/tap"],"brew":["anomalyco/tap/opencode-v2"],"cask":["codex"]}}'
+  TOOLSET_TAPPED='{"kind":"ToolSet","metadata":{"name":"ai"},"spec":{"taps":["anomalyco/tap"],"brew":["anomalyco/tap/opencode-v2"],"cask":["codex"]}}'
+  TOOLSET_AI='{"kind":"ToolSet","metadata":{"name":"ai"},"spec":{"cask":["claude"],"uninstall":{"brew":["anomalyco/tap/opencode-v2"],"cask":["codex"]}}}'
   TOOLSET_CORE='{"kind":"ToolSet","metadata":{"name":"core"},"spec":{"brew":["git","jq"]}}'
-}
-
-stub_brew_with_opencode_v1() {
-  stub_command brew '
-echo "brew $*" >>"$STUB_LOG"
-case "$*" in
-  "list --formula --full-name") echo "git"; echo "anomalyco/tap/opencode" ;;
-  "list --versions anomalyco/tap/opencode") echo "opencode 1.18.32" ;;
-  "list --cask opencode-desktop") exit 1 ;;
-esac
-exit 0'
 }
 
 @test "render_brewfile writes taps, brews and casks in order and trusts tap items" {
   expected='tap "anomalyco/tap"
 brew "anomalyco/tap/opencode-v2", trusted: true
 cask "codex"'
-  [ "$(render_brewfile "$TOOLSET_AI")" = "$expected" ]
-}
-
-@test "migration is skipped for a toolset without opencode-v2" {
-  stub_brew_with_opencode_v1
-  run migrate_opencode_if_needed "$TOOLSET_CORE"
-  [ "$status" -eq 0 ]
-  ! grep -q uninstall "$STUB_LOG"
-}
-
-@test "migration is skipped when OpenCode 1 is not installed" {
-  stub_command brew 'echo "brew $*" >>"$STUB_LOG"; [ "$*" = "list --formula --full-name" ] && echo git; exit 0'
-  run migrate_opencode_if_needed "$TOOLSET_AI"
-  [ "$status" -eq 0 ]
-  ! grep -q uninstall "$STUB_LOG"
-}
-
-@test "migration stops when the user declines the OpenCode 1 uninstall" {
-  stub_brew_with_opencode_v1
-  WORKSPACE_CONFIRM=n run migrate_opencode_if_needed "$TOOLSET_AI"
-  [ "$status" -eq 1 ]
-  [[ "$output" == *"OpenCode 1 is still installed"* ]]
-  ! grep -q uninstall "$STUB_LOG"
-}
-
-@test "migration uninstalls OpenCode 1 when the user confirms" {
-  stub_brew_with_opencode_v1
-  WORKSPACE_CONFIRM=y run migrate_opencode_if_needed "$TOOLSET_AI"
-  [ "$status" -eq 0 ]
-  grep -qx "brew uninstall anomalyco/tap/opencode" "$STUB_LOG"
-  grep -qx "brew update" "$STUB_LOG"
+  [ "$(render_brewfile "$TOOLSET_TAPPED")" = "$expected" ]
 }
 
 @test "apply in dry run checks the bundle and installs nothing" {
@@ -84,4 +44,54 @@ exit 0'
   [ "$status" -eq 0 ]
   grep -qx "brew install jq" "$STUB_LOG"
   ! grep -qx "brew install git" "$STUB_LOG"
+}
+
+stub_brew_with_opencode_installed() {
+  stub_command brew '
+echo "brew $*" >>"$STUB_LOG"
+case "$*" in
+  "list --formula opencode-v2") exit 0 ;;
+  "list --cask codex") exit 1 ;;
+esac
+exit 0'
+}
+
+@test "uninstall removes an installed package when the user confirms" {
+  stub_brew_with_opencode_installed
+  WORKSPACE_CONFIRM=y run toolset_uninstall "$TOOLSET_AI"
+  [ "$status" -eq 0 ]
+  grep -qx "brew uninstall anomalyco/tap/opencode-v2" "$STUB_LOG"
+  ! grep -q "brew uninstall --cask codex" "$STUB_LOG"
+}
+
+@test "uninstall keeps a package when the user declines" {
+  stub_brew_with_opencode_installed
+  WORKSPACE_CONFIRM=n run toolset_uninstall "$TOOLSET_AI"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"kept brew anomalyco/tap/opencode-v2"* ]]
+  ! grep -q "brew uninstall" "$STUB_LOG"
+}
+
+@test "uninstall in dry run changes nothing" {
+  stub_brew_with_opencode_installed
+  DRY_RUN=1 run toolset_uninstall "$TOOLSET_AI"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"would uninstall brew anomalyco/tap/opencode-v2"* ]]
+  ! grep -q "brew uninstall" "$STUB_LOG"
+}
+
+@test "apply uninstalls before it installs" {
+  stub_brew_with_opencode_installed
+  WORKSPACE_CONFIRM=y run toolset_apply "$TOOLSET_AI"
+  [ "$status" -eq 0 ]
+  uninstall_line="$(grep -n 'brew uninstall' "$STUB_LOG" | head -n 1 | cut -d: -f1)"
+  bundle_line="$(grep -n 'brew bundle --no-upgrade' "$STUB_LOG" | head -n 1 | cut -d: -f1)"
+  [ "$uninstall_line" -lt "$bundle_line" ]
+}
+
+@test "status shows packages that must be absent" {
+  stub_brew_with_opencode_installed
+  run toolset_status "$TOOLSET_AI"
+  [[ "$output" == *"✘ absent brew anomalyco/tap/opencode-v2"* ]]
+  [[ "$output" == *"✔ absent cask codex"* ]]
 }
