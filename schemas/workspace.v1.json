@@ -45,6 +45,7 @@
         "taps": { "$ref": "#/$defs/stringList" },
         "brew": { "$ref": "#/$defs/stringList" },
         "cask": { "$ref": "#/$defs/stringList" },
+        "bins": { "type": "object", "additionalProperties": { "type": "string", "minLength": 1 } },
         "uninstall": {
           "type": "object",
           "additionalProperties": false,

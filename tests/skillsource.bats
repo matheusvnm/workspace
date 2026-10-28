@@ -77,6 +77,15 @@ done'
   grep -qx "npx -y skills add owner/repo -g -a claude-code --copy -y --skill alpha --skill beta" "$STUB_LOG"
 }
 
+@test "upgrade does not reinstall a skill that the user skipped" {
+  stub_npx_that_installs
+  mkdir -p "$HOME/.config/workspace"
+  echo skill/alpha >"$HOME/.config/workspace/skipped"
+  run skillsource_upgrade "$REMOTE_SOURCE"
+  [ "$status" -eq 0 ]
+  grep -qx "npx -y skills add owner/repo -g -a claude-code --copy -y --skill beta" "$STUB_LOG"
+}
+
 @test "upgrade leaves local skills alone" {
   log_stub_calls npx
   create_skill "$WORKSPACE_DIR/llms/skills/upskill"

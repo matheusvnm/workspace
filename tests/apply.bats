@@ -61,10 +61,26 @@ apply() {
   [[ "$output" == *"resource not found: toolset/missing"* ]]
 }
 
-@test "apply rejects --pick without a ref" {
+@test "apply rejects an unknown option" {
   run apply --pick
   [ "$status" -eq 1 ]
-  [[ "$output" == *"--pick needs a toolset ref"* ]]
+  [[ "$output" == *"unknown option: --pick"* ]]
+}
+
+@test "apply --select remembers a declined skill and --reselect asks again" {
+  WORKSPACE_GROUP_CHOICE=none run apply --select skillsource/local
+  [ ! -e "$HOME/.claude/skills/upskill" ]
+  WORKSPACE_GROUP_CHOICE=all run apply --select skillsource/local
+  [[ "$output" == *"- skill/upskill (skipped before)"* ]]
+  [ ! -e "$HOME/.claude/skills/upskill" ]
+  WORKSPACE_GROUP_CHOICE=all run apply --reselect skillsource/local
+  [ -L "$HOME/.claude/skills/upskill" ]
+}
+
+@test "apply without --select installs a skill that the user skipped before" {
+  WORKSPACE_GROUP_CHOICE=none run apply --select skillsource/local
+  run apply skillsource/local
+  [ -L "$HOME/.claude/skills/upskill" ]
 }
 
 @test "diff (dry run) of everything writes nothing" {

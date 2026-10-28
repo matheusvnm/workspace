@@ -5,6 +5,9 @@ metadata:
   name: core
   description: Daily CLI baseline
 spec:
+  bins:
+    ripgrep: rg
+    bats-core: bats
   brew:
     - git          # version control
     - gh           # GitHub CLI

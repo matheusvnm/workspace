@@ -20,8 +20,6 @@ check() {
   fi
 }
 
-is_link_to() { [ -L "$2" ] && [ "$(readlink "$2")" = "$1" ]; }
-
 is_skill_ready() {
   [ -f "$SKILLS_DIR/$1/SKILL.md" ] && [ "$(skill_frontmatter_name "$SKILLS_DIR/$1")" = "$1" ]
 }
@@ -42,10 +40,14 @@ while IFS= read -r toolset; do
     continue
   fi
   name="$(toolset_name "$toolset")"
-  if HOMEBREW_NO_AUTO_UPDATE=1 with_brewfile "$toolset" brew bundle check --no-upgrade >/dev/null 2>&1; then
+  missing=""
+  for key in $(toolset_missing_keys "$toolset"); do
+    is_skipped "$key" || missing="$missing $key"
+  done
+  if [ -z "$missing" ]; then
     ok "toolset/$name installed"
   else
-    warn "toolset/$name incomplete (expected if you skipped items with --pick)"
+    warn "toolset/$name incomplete:$missing"
   fi
   while IFS=' ' read -r type item; do
     if [ -n "$item" ] && is_package_installed "$type" "$item"; then
@@ -54,9 +56,20 @@ while IFS= read -r toolset; do
   done <<<"$(uninstall_entries "$toolset")"
 done <<<"$(resources_of_kind ToolSet)"
 
-for binary in claude node npx yq jq $(query_manifests_raw '.[] | select(.kind == "Installer") | .spec.bin'); do
+for binary in claude node npx yq jq; do
   check "$binary is on PATH" command -v "$binary"
 done
+
+while IFS=' ' read -r name binary; do
+  if [ -z "$binary" ]; then
+    continue
+  fi
+  if is_skipped "installer/$name"; then
+    log "- installer/$name skipped"
+  else
+    check "$binary is on PATH" command -v "$binary"
+  fi
+done <<<"$(query_manifests_raw '.[] | select(.kind == "Installer") | "\(.metadata.name) \(.spec.bin)"')"
 check "Claude settings match the manifests" is_claude_settings_rendered
 check "CLAUDE.md is linked" is_link_to "$WORKSPACE_DIR/llms/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md"
 check "starship.toml is linked" is_link_to "$WORKSPACE_DIR/config/starship.toml" "$HOME/.config/starship.toml"
@@ -69,7 +82,12 @@ for file in "$WORKSPACE_DIR"/llms/commands/*.md "$WORKSPACE_DIR"/llms/agents/*.m
 done
 
 while IFS= read -r skill; do
-  if [ -n "$skill" ]; then
+  if [ -z "$skill" ]; then
+    continue
+  fi
+  if is_skipped "skill/$skill"; then
+    log "- skill $skill skipped"
+  else
     check "skill $skill is installed" is_skill_ready "$skill"
   fi
 done <<<"$(declared_skill_names)"
@@ -81,7 +99,12 @@ while IFS=' ' read -r marketplace_name marketplace_source; do
 done <<<"$(declared_marketplaces)"
 
 while IFS= read -r plugin_id; do
-  if [ -n "$plugin_id" ]; then
+  if [ -z "$plugin_id" ]; then
+    continue
+  fi
+  if is_skipped "plugin/$plugin_id"; then
+    log "- plugin $plugin_id skipped"
+  else
     check "plugin $plugin_id is installed" is_plugin_installed "$plugin_id"
   fi
 done <<<"$(declared_plugin_ids)"

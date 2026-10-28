@@ -34,7 +34,7 @@ just setup
 ```
 
 - `bootstrap.sh` installs Homebrew, `just`, `yq` and `jq`.
-- `just setup` validates the manifests, applies them, asks you about each item to prune, and runs `just doctor`.
+- `just setup` validates the manifests and asks you which items to install (see [Selection](#selection)). Then it applies them, asks you about each item to prune, and runs `just doctor`.
 
 Open a new terminal after the setup. Then do these steps one time:
 
@@ -42,7 +42,7 @@ Open a new terminal after the setup. Then do these steps one time:
 2. Run `sentry auth login` to sign in to Sentry.
 3. Start `claude` and sign in to your Claude account.
 
-Run `just setup` again at any time. A second run makes no changes.
+Run `just setup` again at any time. A second run makes no changes. It asks only about new items.
 
 ## 2. Model
 
@@ -73,7 +73,7 @@ manifests/                   Desired state (YAML)
   claude.yaml                PluginSet and PermissionPolicy for Claude Code
 schemas/workspace.v1.json    JSON Schema for all manifests
 automation/                  The reconciler (bash 3.2, yq, jq)
-  lib/common.sh              Log, confirm, links, backups
+  lib/common.sh              Log, confirm, selection, links, backups
   lib/manifest.sh            Load and query the manifests
   kinds/<kind>.sh            Apply and status functions for each kind
   apply.sh get.sh prune.sh validate.sh doctor.sh
@@ -120,7 +120,7 @@ spec: {}
 
 | Kind | Purpose | `spec` fields |
 |---|---|---|
-| `ToolSet` | A group of Homebrew packages | `taps`, `brew`, `cask` (one of `brew` or `cask` is necessary), `uninstall: {brew, cask}` (packages that must not be installed) |
+| `ToolSet` | A group of Homebrew packages | `taps`, `brew`, `cask` (one of `brew` or `cask` is necessary), `bins: {<package>: <binary>}` (the binary to find when its name is not the package name), `uninstall: {brew, cask}` (packages that must not be installed) |
 | `Installer` | A tool that has no Homebrew package | `bin` and `script` (necessary), `post`, `hint`, `owns` |
 | `SkillSource` | A source of skills | `source` (`owner/repo` or `./path`), `skills` (`["*"]` only for a local path) |
 | `PluginSet` | Claude Code marketplaces and plugins | `harness: claude-code`, `marketplaces: [{name, source}]`, `plugins: ["<plugin>@<marketplace>"]` |
@@ -147,18 +147,50 @@ A plugin must come from a marketplace in `marketplaces` or from the built-in `cl
 | Recipe | Result |
 |---|---|
 | `just` | Shows all recipes. |
-| `just setup` | Runs `validate`, `apply`, `prune` and `doctor`. |
-| `just setup-ci` | Runs the setup with no questions. Prune only shows the items. |
+| `just setup` | Runs `validate`, `apply --select`, `prune` and `doctor`. |
+| `just setup --reselect` | Runs the setup and asks again about the items that you skipped. |
+| `just setup-ci` | Runs the setup with no questions. It installs all items. Prune only shows the items. |
 | `just get <kind>` | Shows the declared resources and their status. Kinds: `toolset`, `installer`, `skillsource`, `claude`. |
 | `just diff [kind/name...]` | Shows the changes that `apply` will make. It changes nothing. |
 | `just apply [kind/name...]` | Changes the machine to match the manifests. With no argument, it applies all. |
-| `just apply --pick toolset/<name>` | Asks you about each package of a tool set. |
+| `just apply --select [kind/name...]` | Asks you which missing items to install. It does not ask about the items that you skipped before. |
+| `just apply --reselect [kind/name...]` | Asks you about all missing items, also the items that you skipped before. |
 | `just prune [--dry-run]` | Asks you about each item that no manifest declares, then deletes it. |
 | `just validate` | Validates the manifests against the schema. |
 | `just doctor` | Shows a `✔` or `✘` line for each part of the machine state. |
 | `just upgrade` | Upgrades the Homebrew packages, the skills, the Claude Code marketplaces and the plugins. |
 | `just test` | Runs the reconciler tests. |
 | `just lint` | Runs `shellcheck` on the reconciler scripts. |
+
+### Selection
+
+`just setup` shows each group with its missing items. A group is a tool set, a skill source, the installers or the Claude Code plugins.
+
+```
+toolset/cloud:
+  + brew/kubernetes-cli
+  + cask/freelens
+  - cask/docker-desktop (skipped before)
+Install from toolset/cloud? [a]ll, [o]ne by one, [N]one:
+```
+
+- `a` installs all items in the list.
+- `o` asks you about each item.
+- `N` or Enter installs no item.
+
+Rules:
+
+- The setup does not show the items that are installed.
+- The setup writes each item that you skip to `~/.config/workspace/skipped`. The next run does not ask about it again. Use `just setup --reselect` to ask again.
+- `just doctor` does not fail for an item that you skipped.
+- `just apply` with no `--select` and `just setup-ci` install all items. They ignore the skipped list.
+- `just upgrade` does not reinstall a skill that you skipped.
+
+A tool can be on the machine but not from Homebrew. For example, you installed Docker Desktop from its website. In this case, the reconciler shows a warning and does not install the package. The other tool keeps control of it.
+
+- For a formula, the reconciler looks for a binary with the package name on `PATH`. If the binary has a different name, add it to `bins` of the tool set, for example `bins: { ripgrep: rg }`.
+- For a cask, the reconciler reads the app and binary names from `brew info`. It looks for the app in `/Applications` and `~/Applications`, and for the binary on `PATH`.
+- A cask that uses only a `.pkg` installer has no app or binary name. The reconciler cannot find it.
 
 ## 6. Procedures: add, remove, update
 
@@ -172,8 +204,9 @@ Terms: "remove" applies to an entry in a list or a table. "Delete" applies to a 
 
 1. Select a tool set in `manifests/tools/`. If no tool set fits, see 6.2.
 2. Add the package name to `brew` or `cask`. Add a short comment after the name.
-3. If the package comes from a tap, add the tap to `taps`. Use the full name, for example `oven-sh/bun/bun`. The reconciler tells Homebrew to trust each full name.
-4. Run `just apply toolset/<name>`.
+3. If the binary name is not the package name, add it to `bins`, for example `kubernetes-cli: kubectl`.
+4. If the package comes from a tap, add the tap to `taps`. Use the full name, for example `oven-sh/bun/bun`. The reconciler tells Homebrew to trust each full name.
+5. Run `just apply toolset/<name>`.
 
 **Remove:**
 

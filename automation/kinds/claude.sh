@@ -88,7 +88,7 @@ require_claude() {
 }
 
 claude_plugins_apply() {
-  local known installed name source plugin_id
+  local known installed name source plugin_id pending="" key
   known="$(known_marketplace_names)"
   installed="$(installed_plugin_ids)"
   while IFS=' ' read -r name source; do
@@ -104,9 +104,14 @@ claude_plugins_apply() {
     ok "marketplace $name added"
   done <<<"$(declared_marketplaces)"
   while IFS= read -r plugin_id; do
-    if [ -z "$plugin_id" ] || grep -qxF "$plugin_id" <<<"$installed"; then
-      continue
+    if [ -n "$plugin_id" ] && ! grep -qxF "$plugin_id" <<<"$installed"; then
+      pending="$pending plugin/$plugin_id"
     fi
+  done <<<"$(declared_plugin_ids)"
+  # shellcheck disable=SC2086
+  choose_items "pluginset/claude-code" $pending
+  for key in $SELECTED_ITEMS; do
+    plugin_id="${key#plugin/}"
     if [ "$DRY_RUN" = 1 ]; then
       log "would install plugin $plugin_id"
       continue
@@ -114,7 +119,7 @@ claude_plugins_apply() {
     require_claude
     claude plugin install "$plugin_id" --scope user </dev/null || die "plugin install failed: $plugin_id"
     ok "plugin $plugin_id installed"
-  done <<<"$(declared_plugin_ids)"
+  done
 }
 
 claude_apply() {
@@ -132,6 +137,8 @@ claude_status() {
     fi
     if grep -qxF "$plugin_id" <<<"$installed"; then
       printf '  ✔ plugin %s\n' "$plugin_id"
+    elif is_skipped "plugin/$plugin_id"; then
+      printf '  - plugin %s (skipped)\n' "$plugin_id"
     else
       printf '  ✘ plugin %s\n' "$plugin_id"
     fi

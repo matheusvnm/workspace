@@ -15,36 +15,51 @@ check_skill_name() {
 }
 
 apply_local_skills() {
-  local source_json="$1" source name
+  local source_json="$1" source name pending="" key
   source="$(jq -r '.spec.source' <<<"$source_json")"
   while IFS= read -r name; do
     if [ -z "$name" ]; then
       continue
     fi
     check_skill_name "$WORKSPACE_DIR/${source#./}/$name"
-    ensure_link "$WORKSPACE_DIR/${source#./}/$name" "$SKILLS_DIR/$name"
+    if ! is_link_to "$WORKSPACE_DIR/${source#./}/$name" "$SKILLS_DIR/$name"; then
+      pending="$pending skill/$name"
+    fi
   done <<<"$(local_skill_names "$source_json")"
+  # shellcheck disable=SC2086
+  choose_items "skillsource/$(jq -r '.metadata.name' <<<"$source_json")" $pending
+  for key in $SELECTED_ITEMS; do
+    ensure_link "$WORKSPACE_DIR/${source#./}/${key#skill/}" "$SKILLS_DIR/${key#skill/}"
+  done
 }
 
 apply_remote_skills() {
-  local source_json="$1" source name missing=""
+  local source_json="$1" source name missing="" key names=""
   source="$(jq -r '.spec.source' <<<"$source_json")"
   while IFS= read -r name; do
     if [ -n "$name" ] && [ ! -f "$SKILLS_DIR/$name/SKILL.md" ]; then
-      missing="$missing $name"
+      missing="$missing skill/$name"
     fi
   done <<<"$(jq -r '.spec.skills[]' <<<"$source_json")"
   if [ -z "$missing" ]; then
     ok "skills from $source present"
     return 0
   fi
+  # shellcheck disable=SC2086
+  choose_items "skillsource/$(jq -r '.metadata.name' <<<"$source_json")" $missing
+  for key in $SELECTED_ITEMS; do
+    names="$names ${key#skill/}"
+  done
+  if [ -z "$names" ]; then
+    return 0
+  fi
   if [ "$DRY_RUN" = 1 ]; then
-    log "would add from $source:$missing"
+    log "would add from $source:$names"
     return 0
   fi
   # shellcheck disable=SC2086
-  install_remote_skills "$source" $missing
-  ok "skills from $source installed:$missing"
+  install_remote_skills "$source" $names
+  ok "skills from $source installed:$names"
 }
 
 install_remote_skills() {
@@ -63,12 +78,18 @@ install_remote_skills() {
 }
 
 skillsource_upgrade() {
-  local source_json="$1" source names
+  local source_json="$1" source names name
   source="$(jq -r '.spec.source' <<<"$source_json")"
   case "$source" in
     ./*) return 0 ;;
   esac
-  names="$(jq -r '.spec.skills | join(" ")' <<<"$source_json")"
+  names="$(jq -r '.spec.skills[]' <<<"$source_json" | while IFS= read -r name; do
+    is_skipped "skill/$name" || printf '%s ' "$name"
+  done)"
+  names="${names% }"
+  if [ -z "$names" ]; then
+    return 0
+  fi
   if [ "$DRY_RUN" = 1 ]; then
     log "would reinstall from $source: $names"
     return 0
@@ -94,6 +115,8 @@ skillsource_status() {
     fi
     if [ -f "$SKILLS_DIR/$name/SKILL.md" ]; then
       printf '  ✔ %s\n' "$name"
+    elif is_skipped "skill/$name"; then
+      printf '  - %s (skipped)\n' "$name"
     else
       printf '  ✘ %s\n' "$name"
     fi

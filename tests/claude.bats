@@ -119,6 +119,14 @@ write_plugin_state() {
   grep -qx "claude plugin install other@claude-plugins-official --scope user" "$STUB_LOG"
 }
 
+@test "plugins apply adds the marketplaces but not the plugins that the user declines" {
+  log_stub_calls claude
+  IS_SELECT=1 WORKSPACE_GROUP_CHOICE=none run claude_plugins_apply
+  [ "$status" -eq 0 ]
+  grep -qx "claude plugin marketplace add backnotprop/plannotator --scope user" "$STUB_LOG"
+  ! grep -q "claude plugin install" "$STUB_LOG"
+}
+
 @test "plugins apply skips what is already present" {
   write_plugin_state '{"plannotator":{}}' '{"version":2,"plugins":{"plannotator@plannotator":[],"other@claude-plugins-official":[]}}'
   log_stub_calls claude

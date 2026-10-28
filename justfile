@@ -10,8 +10,12 @@ default:
     @just --list --unsorted
 
 [group("setup")]
-[doc("Validate, apply, prune and verify the whole workspace")]
-setup: validate apply prune doctor
+[doc("Validate, select and apply, prune and verify the whole workspace: just setup [--reselect]")]
+setup *args:
+    just validate
+    just apply --select {{ args }}
+    just prune
+    just doctor
 
 [group("setup")]
 [doc("Run setup with no prompts; prune runs as a dry run")]
@@ -32,7 +36,7 @@ diff *refs:
     DRY_RUN=1 bash "{{ automation }}/apply.sh" {{ refs }}
 
 [group("ops")]
-[doc("Converge the machine to the manifests: just apply [--pick] [kind/name...]")]
+[doc("Converge the machine to the manifests: just apply [--select|--reselect] [kind/name...]")]
 apply *args:
     bash "{{ automation }}/apply.sh" {{ args }}
 

@@ -28,12 +28,33 @@ installer_apply() {
   fi
 }
 
+installers_apply() {
+  local group="$1" installer pending="" key
+  while IFS= read -r installer; do
+    if [ -z "$installer" ]; then
+      continue
+    fi
+    if command -v "$(installer_field "$installer" '.spec.bin')" >/dev/null 2>&1; then
+      ok "installer/$(installer_field "$installer" '.metadata.name') present"
+    else
+      pending="$pending installer/$(installer_field "$installer" '.metadata.name')"
+    fi
+  done
+  # shellcheck disable=SC2086
+  choose_items "$group" $pending
+  for key in $SELECTED_ITEMS; do
+    installer_apply "$(resource_by_ref "$key")"
+  done
+}
+
 installer_status() {
   local installer="$1" name bin
   name="$(installer_field "$installer" '.metadata.name')"
   bin="$(installer_field "$installer" '.spec.bin')"
   if command -v "$bin" >/dev/null 2>&1; then
     printf '✔ installer/%s (%s)\n' "$name" "$(command -v "$bin")"
+  elif is_skipped "installer/$name"; then
+    printf -- '- installer/%s (skipped)\n' "$name"
   else
     printf '✘ installer/%s (%s missing)\n' "$name" "$bin"
   fi

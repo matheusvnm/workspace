@@ -5,6 +5,9 @@ metadata:
   name: cloud
   description: Cloud and container tooling
 spec:
+  bins:
+    awscli: aws
+    kubernetes-cli: kubectl
   brew:
     - awscli            # AWS CLI
     - kubernetes-cli    # kubectl
