@@ -78,14 +78,6 @@ YAML
   [[ "$output" == *"invalid ref"* ]]
 }
 
-@test "package_name removes the version from plain and scoped packages" {
-  [ "$(package_name opencode-claude-auth)" = opencode-claude-auth ]
-  [ "$(package_name opencode-claude-auth@latest)" = opencode-claude-auth ]
-  [ "$(package_name @plannotator/opencode)" = @plannotator/opencode ]
-  [ "$(package_name @plannotator/opencode@0.28.30)" = @plannotator/opencode ]
-  [ "$(package_name 'superpowers@git+https:')" = superpowers ]
-}
-
 @test "declared_skill_names lists remote skills and local skill folders" {
   create_skill "$WORKSPACE_DIR/llms/skills/local-one"
   mkdir -p "$WORKSPACE_DIR/llms/skills/not-a-skill"

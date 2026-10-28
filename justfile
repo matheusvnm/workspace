@@ -52,7 +52,7 @@ doctor:
     bash "{{ automation }}/doctor.sh"
 
 [group("ops")]
-[doc("Upgrade brew packages, skills and OpenCode plugins")]
+[doc("Upgrade brew packages, skills and Claude Code plugins")]
 upgrade:
     brew update
     brew upgrade

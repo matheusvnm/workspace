@@ -37,21 +37,6 @@ owned_names() {
   query_manifests_raw --arg type "$1" '.[] | select(.kind == "Installer") | (.spec.owns[$type] // [])[]'
 }
 
-package_name() {
-  local spec="$1" scope="" rest
-  case "$spec" in
-    @*)
-      scope="@"
-      rest="${spec#@}"
-      ;;
-    *) rest="$spec" ;;
-  esac
-  case "$rest" in
-    *@*) rest="${rest%@*}" ;;
-  esac
-  printf '%s%s\n' "$scope" "$rest"
-}
-
 local_skill_names() {
   local source_json="$1" source dir name
   source="$(jq -r '.spec.source' <<<"$source_json")"

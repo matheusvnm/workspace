@@ -8,14 +8,13 @@ setup_workspace() {
   export STUB_BIN="$BATS_TEST_TMPDIR/bin"
   export STUB_LOG="$BATS_TEST_TMPDIR/stub.log"
   export WORKSPACE_CONFIRM=n
-  unset DRY_RUN SKILLS_DIR CLAUDE_DIR OPENCODE_DIR OPENCODE_CACHE_DIR MANIFEST_JSON
+  unset DRY_RUN SKILLS_DIR CLAUDE_DIR MANIFEST_JSON
   mkdir -p "$HOME" "$MANIFEST_DIR" "$STUB_BIN" \
     "$WORKSPACE_DIR/llms/skills" "$WORKSPACE_DIR/llms/commands" "$WORKSPACE_DIR/llms/agents" "$WORKSPACE_DIR/config"
   : >"$STUB_LOG"
   ln -s "$REPO_ROOT/automation" "$WORKSPACE_DIR/automation"
   ln -s "$REPO_ROOT/schemas" "$WORKSPACE_DIR/schemas"
   export PATH="$STUB_BIN:$PATH"
-  stub_command opencode 'exit 0'
   stub_command claude 'exit 0'
 }
 
