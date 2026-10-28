@@ -67,3 +67,29 @@ done'
   [[ "$output" == *"would add from owner/repo: alpha beta"* ]]
   [ ! -s "$STUB_LOG" ]
 }
+
+@test "upgrade reinstalls every remote skill into the claude skills folder" {
+  stub_npx_that_installs
+  create_skill "$HOME/.claude/skills/alpha"
+  create_skill "$HOME/.claude/skills/beta"
+  run skillsource_upgrade "$REMOTE_SOURCE"
+  [ "$status" -eq 0 ]
+  grep -qx "npx -y skills add owner/repo -g -a claude-code --copy -y --skill alpha --skill beta" "$STUB_LOG"
+}
+
+@test "upgrade leaves local skills alone" {
+  log_stub_calls npx
+  create_skill "$WORKSPACE_DIR/llms/skills/upskill"
+  run skillsource_upgrade "$LOCAL_SOURCE"
+  [ "$status" -eq 0 ]
+  [ ! -s "$STUB_LOG" ]
+  [ ! -e "$HOME/.claude/skills/upskill" ]
+}
+
+@test "upgrade in dry run calls nothing" {
+  log_stub_calls npx
+  DRY_RUN=1 run skillsource_upgrade "$REMOTE_SOURCE"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"would reinstall from owner/repo: alpha beta"* ]]
+  [ ! -s "$STUB_LOG" ]
+}

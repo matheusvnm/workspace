@@ -56,7 +56,7 @@ doctor:
 upgrade:
     brew update
     brew upgrade
-    DISABLE_TELEMETRY=1 npx -y skills update -g -y
+    bash "{{ automation }}/upgrade-skills.sh"
     claude plugin marketplace update
     jq -r '(.plugins // {}) | keys[]' "$HOME/.claude/plugins/installed_plugins.json" | while read -r plugin_id; do claude plugin update "$plugin_id" --scope user; done
 

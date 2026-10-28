@@ -42,16 +42,40 @@ apply_remote_skills() {
     log "would add from $source:$missing"
     return 0
   fi
+  # shellcheck disable=SC2086
+  install_remote_skills "$source" $missing
+  ok "skills from $source installed:$missing"
+}
+
+install_remote_skills() {
+  local source="$1" name names
+  shift
+  names="$*"
   require_node
   set --
-  for name in $missing; do
+  for name in $names; do
     set -- "$@" --skill "$name"
   done
   DISABLE_TELEMETRY=1 npx -y skills add "$source" -g -a claude-code --copy -y "$@" </dev/null || die "skills add failed for $source"
-  for name in $missing; do
+  for name in $names; do
     [ -f "$SKILLS_DIR/$name/SKILL.md" ] || die "skill $name was not installed from $source"
   done
-  ok "skills from $source installed:$missing"
+}
+
+skillsource_upgrade() {
+  local source_json="$1" source names
+  source="$(jq -r '.spec.source' <<<"$source_json")"
+  case "$source" in
+    ./*) return 0 ;;
+  esac
+  names="$(jq -r '.spec.skills | join(" ")' <<<"$source_json")"
+  if [ "$DRY_RUN" = 1 ]; then
+    log "would reinstall from $source: $names"
+    return 0
+  fi
+  # shellcheck disable=SC2086
+  install_remote_skills "$source" $names
+  ok "skills from $source reinstalled: $names"
 }
 
 skillsource_apply() {
