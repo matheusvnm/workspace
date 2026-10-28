@@ -3,13 +3,14 @@ apiVersion: workspace/v1
 kind: ToolSet
 metadata:
   name: ai
-  description: AI coding agents
+  description: Claude desktop app and Claude Code
 spec:
-  taps:
-    - anomalyco/tap
-  brew:
-    - anomalyco/tap/opencode-v2   # OpenCode 2 CLI
   cask:
-    - opencode-desktop            # OpenCode desktop app
-    - claude-code@latest          # Claude Code CLI
-    - codex                       # Codex CLI
+    - claude               # Claude desktop app
+    - claude-code@latest   # Claude Code CLI
+  uninstall:
+    brew:
+      - anomalyco/tap/opencode-v2
+    cask:
+      - opencode-desktop
+      - codex

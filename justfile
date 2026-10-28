@@ -22,7 +22,7 @@ setup-ci:
     just doctor
 
 [group("ops")]
-[doc("Show declared resources and their status: just get toolset|installer|skillsource|opencode")]
+[doc("Show declared resources and their status: just get toolset|installer|skillsource|claude")]
 get kind:
     bash "{{ automation }}/get.sh" {{ kind }}
 
@@ -57,7 +57,8 @@ upgrade:
     brew update
     brew upgrade
     DISABLE_TELEMETRY=1 npx -y skills update -g -y
-    opencode plugin update
+    claude plugin marketplace update
+    jq -r '(.plugins // {}) | keys[]' "$HOME/.claude/plugins/installed_plugins.json" | while read -r plugin_id; do claude plugin update "$plugin_id" --scope user; done
 
 [group("dev")]
 [doc("Run the automation tests")]

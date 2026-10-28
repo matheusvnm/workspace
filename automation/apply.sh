@@ -2,7 +2,7 @@
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 source "$WORKSPACE_DIR/automation/lib/manifest.sh"
-for module in toolset installer skillsource opencode conventions; do
+for module in toolset installer skillsource opencode claude conventions; do
   source "$WORKSPACE_DIR/automation/kinds/$module.sh"
 done
 
@@ -29,7 +29,7 @@ apply_resource() {
       ;;
     Installer) installer_apply "$resource" ;;
     SkillSource) skillsource_apply "$resource" ;;
-    PluginSet | PermissionPolicy) opencode_apply ;;
+    PluginSet | PermissionPolicy) claude_apply ;;
     *) die "unsupported kind: $kind" ;;
   esac
 }
@@ -50,7 +50,7 @@ if [ -z "$refs" ]; then
   apply_kind ToolSet
   apply_kind Installer
   apply_kind SkillSource
-  opencode_apply
+  claude_apply
   conventions_apply
   exit 0
 fi

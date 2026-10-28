@@ -79,3 +79,33 @@ YAML
   [ "$status" -eq 1 ]
   [[ "$output" == *'remote SkillSource cannot use "*": remote'* ]]
 }
+
+@test "validate rejects a plugin from an undeclared marketplace" {
+  write_manifest claude.yaml <<'YAML'
+apiVersion: workspace/v1
+kind: PluginSet
+metadata:
+  name: claude-code
+spec:
+  harness: claude-code
+  plugins: [tool@unknown]
+YAML
+  run validate
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"plugins use undeclared marketplaces: unknown"* ]]
+}
+
+@test "validate accepts a toolset with an uninstall list" {
+  write_manifest tools/ai.yaml <<'YAML'
+apiVersion: workspace/v1
+kind: ToolSet
+metadata:
+  name: ai
+spec:
+  cask: [claude]
+  uninstall:
+    cask: [codex]
+YAML
+  run validate
+  [ "$status" -eq 0 ]
+}

@@ -144,3 +144,13 @@ write_plugin_state() {
   [[ "$output" == *"✘ plugin other@claude-plugins-official"* ]]
   [[ "$output" == *"drifted"* ]]
 }
+
+@test "the repo manifests render the Claude Code permissions" {
+  MANIFEST_DIR="$REPO_ROOT/manifests" load_manifests
+  run render_claude_permissions
+  [ "$status" -eq 0 ]
+  jq -e '.allow | index("Bash(git push *)")' <<<"$output" >/dev/null
+  jq -e '.ask | index("Bash(git push --force*)")' <<<"$output" >/dev/null
+  jq -e '.ask | index("Read(//**/.env)")' <<<"$output" >/dev/null
+  [ "$(jq -r .defaultMode <<<"$output")" = acceptEdits ]
+}

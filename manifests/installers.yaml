@@ -8,7 +8,7 @@ spec:
   bin: twg
   script: automation/installers/twg.sh
   post:
-    - twg skills install
+    - twg skills install --agent claude -y
   hint: Run `twg setup` to sign in to Atlassian.
   owns:
     skills: ["twg*"]
@@ -24,3 +24,14 @@ spec:
   hint: Run `sentry auth login` to sign in to Sentry.
   owns:
     skills: ["sentry-cli"]
+---
+apiVersion: workspace/v1
+kind: Installer
+metadata:
+  name: plannotator
+  description: Plannotator CLI for the Claude Code plan review hooks
+spec:
+  bin: plannotator
+  script: automation/installers/plannotator.sh
+  owns:
+    skills: ["plannotator*"]

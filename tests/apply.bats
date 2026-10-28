@@ -21,18 +21,19 @@ spec:
   source: ./llms/skills
   skills: ["*"]
 YAML
-  write_manifest opencode.yaml <<'YAML'
+  write_manifest claude.yaml <<'YAML'
 apiVersion: workspace/v1
 kind: PluginSet
 metadata:
-  name: opencode
+  name: claude-code
 spec:
-  harness: opencode
+  harness: claude-code
   plugins:
-    - package: plain@latest
+    - plain@claude-plugins-official
 YAML
   create_skill "$WORKSPACE_DIR/llms/skills/upskill"
   log_stub_calls brew
+  log_stub_calls claude
 }
 
 apply() {
@@ -43,14 +44,15 @@ apply() {
   run apply skillsource/local
   [ "$status" -eq 0 ]
   [ -L "$HOME/.agents/skills/upskill" ]
-  [ ! -e "$HOME/.config/opencode/opencode.json" ]
+  [ ! -e "$HOME/.claude/settings.json" ]
   [ ! -s "$STUB_LOG" ]
 }
 
-@test "apply with a pluginset ref renders the opencode config" {
-  run apply pluginset/opencode
+@test "apply with a pluginset ref installs plugins and writes the Claude settings" {
+  run apply pluginset/claude-code
   [ "$status" -eq 0 ]
-  [ "$(jq -r '.plugins[0]' "$HOME/.config/opencode/opencode.json")" = plain@latest ]
+  grep -qx "claude plugin install plain@claude-plugins-official --scope user" "$STUB_LOG"
+  [ "$(jq -r '."$schema"' "$HOME/.claude/settings.json")" = "https://json.schemastore.org/claude-code-settings.json" ]
 }
 
 @test "apply fails for an unknown ref" {
@@ -70,9 +72,10 @@ apply() {
   DRY_RUN=1 run apply
   [ "$status" -eq 0 ]
   [ ! -e "$HOME/.agents/skills/upskill" ]
-  [ ! -e "$HOME/.config/opencode/opencode.json" ]
+  [ ! -e "$HOME/.claude/settings.json" ]
   [ ! -e "$HOME/.zshrc" ]
   ! grep -q "brew bundle --no-upgrade" "$STUB_LOG"
+  ! grep -q "claude plugin install" "$STUB_LOG"
 }
 
 @test "get lists the status of a kind" {
