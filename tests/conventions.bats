@@ -4,7 +4,7 @@ load helpers
 
 setup() {
   setup_workspace
-  load_automation opencode conventions
+  load_automation claude conventions
 }
 
 @test "zsh block is appended when it is missing" {
@@ -55,18 +55,18 @@ setup() {
 
 @test "link_markdown_files links every markdown file" {
   touch "$WORKSPACE_DIR/llms/commands/run.md" "$WORKSPACE_DIR/llms/commands/bruh.md" "$WORKSPACE_DIR/llms/commands/notes.txt"
-  link_markdown_files "$WORKSPACE_DIR/llms/commands" "$HOME/.config/opencode/commands"
-  [ "$(readlink "$HOME/.config/opencode/commands/run.md")" = "$WORKSPACE_DIR/llms/commands/run.md" ]
-  [ "$(readlink "$HOME/.config/opencode/commands/bruh.md")" = "$WORKSPACE_DIR/llms/commands/bruh.md" ]
-  [ ! -e "$HOME/.config/opencode/commands/notes.txt" ]
+  link_markdown_files "$WORKSPACE_DIR/llms/commands" "$HOME/.claude/commands"
+  [ "$(readlink "$HOME/.claude/commands/run.md")" = "$WORKSPACE_DIR/llms/commands/run.md" ]
+  [ "$(readlink "$HOME/.claude/commands/bruh.md")" = "$WORKSPACE_DIR/llms/commands/bruh.md" ]
+  [ ! -e "$HOME/.claude/commands/notes.txt" ]
 }
 
 @test "conventions_apply links rules, commands and starship" {
-  touch "$WORKSPACE_DIR/llms/AGENTS.md" "$WORKSPACE_DIR/llms/commands/run.md" "$WORKSPACE_DIR/config/starship.toml"
+  touch "$WORKSPACE_DIR/llms/CLAUDE.md" "$WORKSPACE_DIR/llms/commands/bruh.md" "$WORKSPACE_DIR/config/starship.toml"
   mkdir -p "$HOME/.oh-my-zsh"
   conventions_apply
-  [ "$(readlink "$HOME/.config/opencode/AGENTS.md")" = "$WORKSPACE_DIR/llms/AGENTS.md" ]
-  [ "$(readlink "$HOME/.config/opencode/commands/run.md")" = "$WORKSPACE_DIR/llms/commands/run.md" ]
+  [ "$(readlink "$HOME/.claude/CLAUDE.md")" = "$WORKSPACE_DIR/llms/CLAUDE.md" ]
+  [ "$(readlink "$HOME/.claude/commands/bruh.md")" = "$WORKSPACE_DIR/llms/commands/bruh.md" ]
   [ "$(readlink "$HOME/.config/starship.toml")" = "$WORKSPACE_DIR/config/starship.toml" ]
 }
 

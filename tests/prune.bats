@@ -4,6 +4,7 @@ load helpers
 
 setup() {
   setup_workspace
+  export SKILLS_DIR="$HOME/.agents/skills"
   write_manifest skills.yaml <<'YAML'
 apiVersion: workspace/v1
 kind: SkillSource

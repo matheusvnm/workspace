@@ -75,9 +75,9 @@ link_markdown_files() {
 }
 
 conventions_apply() {
-  ensure_link "$WORKSPACE_DIR/llms/AGENTS.md" "$OPENCODE_DIR/AGENTS.md"
-  link_markdown_files "$WORKSPACE_DIR/llms/commands" "$OPENCODE_DIR/commands"
-  link_markdown_files "$WORKSPACE_DIR/llms/agents" "$OPENCODE_DIR/agents"
+  ensure_link "$WORKSPACE_DIR/llms/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md"
+  link_markdown_files "$WORKSPACE_DIR/llms/commands" "$CLAUDE_DIR/commands"
+  link_markdown_files "$WORKSPACE_DIR/llms/agents" "$CLAUDE_DIR/agents"
   ensure_link "$WORKSPACE_DIR/config/starship.toml" "$HOME/.config/starship.toml"
   install_oh_my_zsh
   apply_zsh_block

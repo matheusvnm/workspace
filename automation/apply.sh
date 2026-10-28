@@ -2,7 +2,7 @@
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 source "$WORKSPACE_DIR/automation/lib/manifest.sh"
-for module in toolset installer skillsource opencode claude conventions; do
+for module in toolset installer skillsource claude conventions; do
   source "$WORKSPACE_DIR/automation/kinds/$module.sh"
 done
 

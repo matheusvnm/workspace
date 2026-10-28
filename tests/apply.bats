@@ -43,7 +43,7 @@ apply() {
 @test "apply with a ref only touches that resource" {
   run apply skillsource/local
   [ "$status" -eq 0 ]
-  [ -L "$HOME/.agents/skills/upskill" ]
+  [ -L "$HOME/.claude/skills/upskill" ]
   [ ! -e "$HOME/.claude/settings.json" ]
   [ ! -s "$STUB_LOG" ]
 }
@@ -71,7 +71,7 @@ apply() {
   mkdir -p "$HOME/.oh-my-zsh"
   DRY_RUN=1 run apply
   [ "$status" -eq 0 ]
-  [ ! -e "$HOME/.agents/skills/upskill" ]
+  [ ! -e "$HOME/.claude/skills/upskill" ]
   [ ! -e "$HOME/.claude/settings.json" ]
   [ ! -e "$HOME/.zshrc" ]
   ! grep -q "brew bundle --no-upgrade" "$STUB_LOG"

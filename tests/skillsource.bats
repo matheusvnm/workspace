@@ -15,18 +15,18 @@ stub_npx_that_installs() {
 echo "npx $*" >>"$STUB_LOG"
 while [ $# -gt 0 ]; do
   if [ "$1" = "--skill" ]; then
-    mkdir -p "$HOME/.agents/skills/$2"
-    printf -- "---\nname: %s\n---\n" "$2" >"$HOME/.agents/skills/$2/SKILL.md"
+    mkdir -p "$HOME/.claude/skills/$2"
+    printf -- "---\nname: %s\n---\n" "$2" >"$HOME/.claude/skills/$2/SKILL.md"
     shift
   fi
   shift
 done'
 }
 
-@test "local skills are linked into the agents skills dir" {
+@test "local skills are linked into the claude skills dir" {
   create_skill "$WORKSPACE_DIR/llms/skills/upskill"
   skillsource_apply "$LOCAL_SOURCE"
-  [ "$(readlink "$HOME/.agents/skills/upskill")" = "$WORKSPACE_DIR/llms/skills/upskill" ]
+  [ "$(readlink "$HOME/.claude/skills/upskill")" = "$WORKSPACE_DIR/llms/skills/upskill" ]
 }
 
 @test "a local skill with a mismatched name fails" {
@@ -38,19 +38,19 @@ done'
 
 @test "remote skills that are present do not call npx" {
   log_stub_calls npx
-  create_skill "$HOME/.agents/skills/alpha"
-  create_skill "$HOME/.agents/skills/beta"
+  create_skill "$HOME/.claude/skills/alpha"
+  create_skill "$HOME/.claude/skills/beta"
   run skillsource_apply "$REMOTE_SOURCE"
   [ "$status" -eq 0 ]
   [ ! -s "$STUB_LOG" ]
 }
 
-@test "missing remote skills are added globally for codex only" {
+@test "missing remote skills are added globally for claude code only" {
   stub_npx_that_installs
-  create_skill "$HOME/.agents/skills/alpha"
+  create_skill "$HOME/.claude/skills/alpha"
   run skillsource_apply "$REMOTE_SOURCE"
   [ "$status" -eq 0 ]
-  grep -qx "npx -y skills add owner/repo -g -a codex -y --skill beta" "$STUB_LOG"
+  grep -qx "npx -y skills add owner/repo -g -a claude-code -y --skill beta" "$STUB_LOG"
 }
 
 @test "remote apply fails when npx does not create the skill" {
