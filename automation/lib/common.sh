@@ -1,6 +1,7 @@
 # shellcheck shell=bash
 WORKSPACE_DIR="${WORKSPACE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 DRY_RUN="${DRY_RUN:-0}"
+CLAUDE_DIR="${CLAUDE_DIR:-$HOME/.claude}"
 export PATH="$HOME/.local/bin:$PATH"
 
 log() { printf '%s\n' "$*"; }
